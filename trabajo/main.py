@@ -8,34 +8,28 @@ import numpy as np
 from CFLPProblem import CFLPProblem
 from HillClimbing import HillClimbing
 
-prob = CFLPProblem(3,3)
+prob = CFLPProblem()
 prob.loadTransportCost("TC.csv")
 prob.loadFacilityCost("FC.csv")
 prob.loadDemand("dem.csv")
 prob.loadCapacity("cap.csv")
 
-algorithm = HillClimbing(prob, maximize=False)
-
+algorithm = HillClimbing(prob, maximize=False, numN = 10)
+print("comienzo optimizacion")
 algorithm.optimize()
-totalCost = algorithm.bestCost
+print("fin optimizacion")
+totalCost = algorithm.getBestCost()
 solution = algorithm.bestState
 execTime = algorithm.execTime
 iterations = algorithm.iterations
 print("fin de ejecución")
-print("solución encontrada: {}".format(solution))
+print("solución encontrada: \n{}".format(solution))
+print("facilities asignadas \n{}".format(algorithm.x))
 print("costo total: {}".format(totalCost))
+print("costo historico: {}".format(algorithm.costHistory))
 print("tiempo de ejecucion {}".format(execTime))
 print("numero de iteraciones {}".format(iterations))
 
-
-
-#solucionPosible = np.array([[1,0,0],[1,0,0],[0,1,0]])
-#print("evaluadando solucion: \n{}".format(solucionPosible))
-#if prob.getFactibility(solucionPosible):
-#    print ("Factible")
-#else:
-#    print ("no factible")
-#obj = prob.evalObj(solucionPosible)
-#print("objetivo {}".format(obj))
-#print("x \n{}".format(prob.minX))
-#print("y \n{}".format(prob.minY))
+print("costo total de instalación {}".format(np.sum(np.array(algorithm.x) * np.array(prob.FC))))
+print("capacidad total {}".format(np.sum(np.array(algorithm.x) * np.array(prob.ICap))))
+print("demanda total {}".format(np.sum(np.array(prob.dem))))
