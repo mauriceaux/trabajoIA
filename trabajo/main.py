@@ -14,7 +14,7 @@ prob.loadFacilityCost("FC.csv")
 prob.loadDemand("dem.csv")
 prob.loadCapacity("cap.csv")
 
-algorithm = HillClimbing(prob, maximize=False, numN = 10)
+algorithm = HillClimbing(prob, maximize=False, numN = 100)
 print("comienzo optimizacion")
 algorithm.optimize()
 print("fin optimizacion")
