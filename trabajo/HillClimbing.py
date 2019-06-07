@@ -25,16 +25,13 @@ class HillClimbing:
         
     def optimize(self):
         self.iterations += 1
-        print("iteración {}".format(self.iterations))
 #        EN LA PRIMERA EJECUCIÓN SE MARCA EL INICIO Y SE SELECCIONA UN STATE AL AZAR
         if self.currState is None:
             self.startTime = datetime.now()
             self.currState = self.problem.getValidRandomState()
             
-#        EVALÚO SI MEJORO LA SOLUCIÓN
-                    
+#        EVALÚO SI MEJORO LA SOLUCIÓN                    
         currCost = self.problem.evalObj(self.currState)
-        print("costo actual {}".format(currCost))
         self.costHistory.append(currCost)
         currCost *= 1 if self.maximize else -1
         if self.bestCost is None or currCost > self.bestCost:
@@ -50,7 +47,6 @@ class HillClimbing:
             neighborCosts = []        
             for neighbor in neighbors:
                 neighborCosts.append(self.problem.evalObj(neighbor))
-#                print(neighbor)
             
             bestNeighborCostIdx = -1
             #DEPENDIENDO DEL TIPO DE PROBLEMA, ELIJO AL MEJOR VECINO
@@ -64,52 +60,20 @@ class HillClimbing:
             bestNeighbor *= 1 if self.maximize else -1
             
             #COMPARO EL OBJETIVO CON EL MEJOR ENCONTRADO
-    #        print("currCost {}, bestNeighbor {}, self.bestCost {}".format(currCost, bestNeighbor, self.bestCost ))
             if bestNeighbor > self.bestCost:
                 self.currState = neighbors[bestNeighborCostIdx]
-    #            self.bestState = neighbors[bestNeighborCostIdx]
-    #            self.bestCost = neighborCosts[bestNeighborCostIdx]
-                self.optimize()
+                return self.optimize()
         print("mejor solución encontrada :)")
         self.endTime = datetime.now()
-        self.execTime = (self.endTime - self.startTime).microseconds
+        self.execTime = (self.endTime - self.startTime).microseconds / 1000
         
         return
         
     
         
     def obtainValidNeighbors(self, currState):
-        print("buscando {} vecinos".format(self.numN))
-        neighbors = []
-        #TODO CREAR UN METODO PARA OBTENER VECINOS
-        currEncoded = self.problem.encodeState(currState)
-        nNeighborVec = self.problem.nextVector(currEncoded)
-        pNeighborVec = self.problem.prevVector(currEncoded)
-        iteracion=0
-        while len(neighbors) < self.numN:
-            iteracion+=1
-#            if(iteracion > 100): 
-#                print("no hay vecinos para {} \nstate original \n{}".format(currEncoded, currState))
-#                break
-            print("next {}".format(nNeighborVec))
-            nextN = self.problem.decodeSt(nNeighborVec)
-            prevN = self.problem.decodeSt(pNeighborVec)
-            if(self.problem.getFactibility(nextN)):
-                neighbors.append(nextN)
-            if(self.problem.getFactibility(prevN)):
-                neighbors.append(prevN)
-            nNeighborVec = self.problem.nextVector(nNeighborVec)
-            print("prev {}".format(pNeighborVec))
-#            exit()
-            pNeighborVec = self.problem.prevVector(pNeighborVec)
-#            print("{} vecinos encontrados \t iteracion {}".format(len(neighbors), iteracion), end='\r')
-            
-        
-        
-#            rndState = self.problem.getValidRandomState()
-#            neighbors.append(rndState)
-        print("\nencontrados {} vecinos".format(len(neighbors)))
-        
+        distance = 10
+        neighbors = self.problem.getValidNeighborhood(currState, distance, dropProb=0.0)        
         return neighbors
     
     

@@ -123,14 +123,15 @@ class CFLPProblem:
 #        state = np.array(state)
 #        print(state.shape)
         res = np.zeros((state.shape[1]), dtype=int)
-#        print(res)
+#        print("res {}".format(res.shape))
         for row in range(state.shape[1]):
 #            print("row {}".format(row))
 #            print("state {}".format(state))
 #            print("state[row,:] {}".format(state[row,:]))
 #            print("np.argmax(state[row,:] {}".format(np.argmax(state[row,:])))
 #            exit()
-            res[np.argmax(state[row,:])] = 1
+            
+            res[row] = np.argmax(state[row,:])
         return res
     
     def decodeSt(self, encVec):
@@ -149,9 +150,21 @@ class CFLPProblem:
 #            print("decoded {}".format(decoded))
             decoded[row,encVec[row]] = 1
         return decoded
+        
+    def nextState(self, state):
+        vec = self.encodeState(state)
+        nextVec = self.nextVector(vec)
+        nextState = self.decodeSt(nextVec)
+        return nextState
+        
+    def prevState(self, state):
+        vec = self.encodeState(state)
+        prevVec = self.prevVector(vec)
+        prevState = self.decodeSt(prevVec)
+        return prevState
             
     def nextVector(self, vec):
-#        print("next vector ini {}".format(vec))
+#        print("next vector: inicial {}".format(vec))
         dim = vec.shape[0]
         _max = self.getDim()[0] 
 #        print("vec inicial {}".format(vec))
@@ -164,7 +177,7 @@ class CFLPProblem:
 #            print("continuo en el ciclo")
             vec[idx] = 0
 #        print("fin ciclo")
-#        print("vec final {}".format(vec))
+#        print("next vector: final {}".format(vec))
         return vec
     
     def prevVector(self, vec):
@@ -176,3 +189,52 @@ class CFLPProblem:
                 break
             vec[idx] = _max -1
         return vec
+        
+    def getVector(self, currVec, pos, dist):
+#        print("getVector \ncurrVec\n{} \npos\n{} \ndist\n{}".format(currVec, pos, dist))
+        _max = self.getDim()[0]
+        target = currVec
+        while dist > 0:
+#            print("target {}".format(target))
+            dist -= 1
+            if pos >= target.shape[0]:
+                pos = 0
+            currVal = target[pos]
+            if currVal < (_max -1):
+                target[pos] += 1
+                continue
+            target[pos] = 0
+            pos += 1
+            
+#        print("target final {}\n max {}".format(target, _max))
+#        exit()
+        return target
+        
+    def getValidNeighborhood(self, currState, distance, dropProb=0.0):
+        enc = self.encodeState(currState)
+        ret = []
+        for j in range(distance):
+            for i in range(enc.shape[0]):
+                random = np.random.random_sample()
+                if(random < dropProb): continue
+                target = self.getVector(enc, i, j+1)
+                dec = self.decodeSt(target)
+                if self.getFactibility(dec):
+                    ret.append(dec)
+        return ret
+        
+        
+        
+    def testEncoding(self):
+        rndState = self.getValidRandomState()
+        print("random state \n{}".format(rndState))
+        enc = self.encodeState(rndState)
+        print("encoded state \n{}".format(enc))
+        
+        dec = self.decodeSt(enc)
+        print("decoded state \n{}".format(dec))
+        if not np.array_equal(rndState, dec):
+            raise Exception("Decodificación no funciona!")
+        _enc = self.encodeState(dec)
+        if not np.array_equal(_enc, enc):
+            raise Exception("Codificación no funciona!")

@@ -7,6 +7,7 @@ Created on Wed Jun  5 15:24:40 2019
 import numpy as np
 from CFLPProblem import CFLPProblem
 from HillClimbing import HillClimbing
+from TabuSearch import TabuSearch
 
 prob = CFLPProblem()
 prob.loadTransportCost("TC.csv")
@@ -14,7 +15,13 @@ prob.loadFacilityCost("FC.csv")
 prob.loadDemand("dem.csv")
 prob.loadCapacity("cap.csv")
 
-algorithm = HillClimbing(prob, maximize=False, numN = 100)
+"""
+#algorithm = HillClimbing(prob, maximize=False, numN = 1000)
+algorithm = TabuSearch(prob, maximize=False)
+
+#100 pruebas de codificacion
+#for _ in range(100):
+#    prob.testEncoding()
 print("comienzo optimizacion")
 algorithm.optimize()
 print("fin optimizacion")
@@ -33,3 +40,11 @@ print("numero de iteraciones {}".format(iterations))
 print("costo total de instalación {}".format(np.sum(np.array(algorithm.x) * np.array(prob.FC))))
 print("capacidad total {}".format(np.sum(np.array(algorithm.x) * np.array(prob.ICap))))
 print("demanda total {}".format(np.sum(np.array(prob.dem))))
+"""
+import pandas as pd
+
+data = pd.read_csv("optimo.csv")
+data = np.array(data)
+print(data.shape)
+factibility = prob.getFactibility(data)
+print("optimo es factible? {}".format(factibility))
