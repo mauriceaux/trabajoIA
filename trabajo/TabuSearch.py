@@ -13,7 +13,7 @@ np.set_printoptions(threshold=sys.maxsize)
 
 class TabuSearch:
     
-    def __init__(self, problem, maximize=True, numIter = 100, maxTabuSize=10):
+    def __init__(self, problem, maximize=True, numIter = 100, maxTabuSize=100):
         
         self.numIter = numIter
         self.maximize = maximize
@@ -39,47 +39,38 @@ class TabuSearch:
         self.bestState = currState
         bestCandidate = currState
         self.bestCost = self.problem.evalObj(currState)
-        highTabu = currState
-        self.bestCost *= 1 if self.maximize else -1
+#        highTabu = currState
+        self.bestCost *= 1 if self.problem.getMaximize() else -1
         self.tabuList.append(currState)
         bestCandidateCost = self.problem.evalObj(bestCandidate)
-        bestCandidateCost *= 1 if self.maximize else -1
+        bestCandidateCost *= 1 if self.problem.getMaximize() else -1
         maxRetry = self.problem.getDim()[0]
         tries = 0
 #        print("tabu search optimize")
 #        while self.iterations < self.numIter and maxRetry > tries:
+        distance = 20
         while maxRetry > tries:
-            
+#            print(tries)
             self.iterations += 1
-            print("Tabu search -- iteracion {} cost {}".format(self.iterations, self.getBestCost()), end='\r')
-#            distance = (tries + 1) * self.distance
-#            dropout = tries/tries+3 if tries > 0 else 0
-            _currState = self.problem.makeMove(currState, tries, round(self.problem.getDim()[0]*1/3))
-            distance = 1
+            print("Tabu search -- iteracion {}       cost {}          distance {}      ".format(self.iterations, self.getBestCost(), distance), end='\r')
+            
             dropout = 0.0
-            neighborhood = self.obtainValidNeighbors(_currState, distance, dropout)
-            if len(neighborhood) == 0:
-                tries+=1
-                continue
-#            print("neighborhood de currstate {} es \n {}".format(currState,neighborhood))
+                
+            neighborhood = self.obtainValidNeighbors(currState, distance, dropout)
+#            print(len(neighborhood))
 #            exit()
-#            assigned = False
             candidates = []
             candidatesCosts = []
             for neighbor in neighborhood:
-#                neighbor = self.problem.decodeSt(encNeighbor)
                 neighbor = np.array(neighbor)
                 neighborCost = self.problem.evalObj(neighbor)
-                neighborCost *= 1 if self.maximize else -1
-                
-#                print("self.tabuList \n{} \nneighbor \n{} \nnp.any(self.tabuList == neighbor) {}".format(self.tabuList,neighbor,np.any(self.tabuList == neighbor)))
+                neighborCost *= 1 if self.problem.getMaximize() else -1
+
                 found = False
                 for tabu in self.tabuList:
                     if(np.all(tabu == neighbor)):
                         found = True
-#                        print("encontrado en tabu")
-#                        if neighborCost > bestCandidateCost:
-#                            highTabu = neighbor
+#                        print("ya visitado")
                         break
 #                print(found)
                 
@@ -88,37 +79,70 @@ class TabuSearch:
 #                if neighborCost > bestCandidateCost:
                     candidates.append(neighbor)
                     candidatesCosts.append(neighborCost)
+                    self.tabuList.append(neighbor)
 #                    assigned = True
                     
 #                exit()
+#            print(len(self.tabuList))
             
             if len(candidatesCosts) < 1:
                 tries+=1
+#                print("2 no se encuentran movimientos para el punto en curso, generando uno nuevo")
+                distance += 1
+#                while True:
+#                    _currState = self.problem.getValidRandomState()
+#                    f = False
+#                    for tabu in self.tabuList:
+#                        if(np.all(tabu == _currState)):
+#                            f = True
+#                            break
+#                    if not f: 
+##                        print(_currState)
+#                        currState = _currState
+#                        break
                 continue
             bestCanIdx = np.argmax(np.array(candidatesCosts))
-#            print(bestCanIdx)
-#            print(np.array(candidatesCosts[bestCanIdx]))
-#            exit()
             bestCandidate = candidates[bestCanIdx]
             bestCandidateCost = candidatesCosts[bestCanIdx]
-            self.tabuList.append(bestCandidate)
+#            self.tabuList.append(bestCandidate)
             currState = bestCandidate
-#            currState = bestCandidate if assigned else highTabu
-#            print("currState {} bestCandidateCost {}".format(currState, bestCandidateCost))
-                    
-#            bestCandidateCost = self.problem.evalObj(bestCandidate)
-#            bestCandidateCost *= 1 if self.maximize else -1
             if bestCandidateCost > self.bestCost:
-#                print("costo {}".format(bestCandidateCost))
                 self.costHistory.append(bestCandidateCost)
                 self.bestState = bestCandidate
-#                self.x = self.problem.getX(bestCandidate)
                 self.bestCost = bestCandidateCost
-                
                 tries = 0
-            else: 
+                distance -= 1 if distance -1 >0 else 0
+            else:
                 tries += 1
-                dif = maxRetry - tries
+                distance += 1
+#                while True:
+#                    _currState = self.problem.getValidRandomState()
+#                    f = False
+#                    for tabu in self.tabuList:
+#                        if(np.all(tabu == _currState)):
+#                            f = True
+#                            break
+#                    if not f: 
+##                        print(_currState)
+#                        currState = _currState
+#                        break
+#                continue
+            
+            
+#            else: 
+#                tries += 1
+##                dif = maxRetry - tries
+#                while True:
+#                    _currState = self.problem.getValidRandomState()
+#                    f = False
+#                    for tabu in self.tabuList:
+#                        if(np.all(tabu == _currState)):
+#                            f = True
+#                            break
+#                    if not f: 
+##                        print(_currState)
+#                        currState = _currState
+#                        break
 #                if dif < 1:
 #                    print("morire")
 #                    print(currState)
@@ -139,6 +163,7 @@ class TabuSearch:
 #        distance = self.distance
 #        dropout=0.0
         neighbors = self.problem.getValidNeighborhood(currState, distance, dropout)
+#        movs = np.zeros()
         return neighbors
     
     

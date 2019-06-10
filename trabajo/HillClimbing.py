@@ -9,7 +9,7 @@ from datetime import datetime
 
 class HillClimbing:
     
-    def __init__(self, problem, maximize=True, numN = 5, numIter = 20):
+    def __init__(self, problem, maximize=True, numN = 5, numIter = 200):
         self.numIter = numIter
         self.numN = numN
         self.maximize = maximize
@@ -28,26 +28,32 @@ class HillClimbing:
         best = None
         tries = 0
         maxTries = 10
-        distance = 1
+        distance = 20
         
         dropout = 0.0
         currState = None
         print("Hill climbing --")
-        for i in range(self.numIter):
-            if maxTries < tries: break
+        while maxTries >= tries:
+#        for i in range(self.numIter):
+#            if maxTries < tries: break
 #            dropout = 0.0 if dropout < 0.0 else dropout
 #            dropout = 0.8 if dropout > 0.9 else dropout
             self._optimize(currState, distance, dropout)
 #            print("******{}********".format(self.bestState))
             if best is None or self.bestCost > best:
                 best = self.bestCost
-                distance -= 5 if distance > 1 else 0
+                distance -= 1 if (distance -1)  > 1 else 0
+#                distance = 1
+                tries = 0
 #                dropout -= 0.1
 #                currState = self.currState
 #                distance -= 10 if distance > 10 else 0
 #                dropout -= 0.01 if dropout > 0.01 else 0.0
             else: 
                 tries += 1
+#                print("eligiendo state nuevo")
+#                currState = self.currState
+                distance+=1 
                 
 #                distance += 10
 #                dropout += 0.1
@@ -55,7 +61,7 @@ class HillClimbing:
         self.bestCost = best
         print("\n")
     
-    def _optimize(self, cState = None, distance = 50, dropOut = 0.0):
+    def _optimize(self, cState = None, distance = 10, dropOut = 0.0):
 #        print("_optimize")
         self.iterations += 1
 #        EN LA PRIMERA EJECUCIÓN SE MARCA EL INICIO Y SE SELECCIONA UN STATE AL AZAR
@@ -67,7 +73,7 @@ class HillClimbing:
 #        EVALÚO SI MEJORO LA SOLUCIÓN                    
         currCost = self.problem.evalObj(self.currState)
 #        print("estado acual {} iteracion {}".format(self.currState,self.iterations))
-        print("iteracion {} \t\t\t cost {}\t\t\t dropout {} \t\t\t distance {} \t\t\t".format(self.iterations, round(self.getBestCost()), dropOut, distance), end='\r')
+        print("iteracion {} \t cost {}\t dropout {}\t distance {}              ".format(self.iterations, round(self.getBestCost()), dropOut, distance), end='\r')
         self.costHistory.append(currCost)
         currCost *= 1 if self.maximize else -1
         if self.bestCost is None or currCost > self.bestCost:
