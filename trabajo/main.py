@@ -7,44 +7,88 @@ Created on Wed Jun  5 15:24:40 2019
 import numpy as np
 from CFLPProblem import CFLPProblem
 from HillClimbing import HillClimbing
+from KNAPSACKProblem import KNAPSACKProblem
 from TabuSearch import TabuSearch
 
-prob = CFLPProblem()
-prob.loadTransportCost("TC.csv")
-prob.loadFacilityCost("FC.csv")
-prob.loadDemand("dem.csv")
-prob.loadCapacity("cap.csv")
+#prob1 = CFLPProblem()
+#prob1.loadTransportCost("TC.csv")
+#prob1.loadFacilityCost("FC.csv")
+#prob1.loadDemand("dem.csv")
+#prob1.loadCapacity("cap.csv")
+#
+prob2 = CFLPProblem()
+prob2.loadTransportCost("TC.csv")
+prob2.loadFacilityCost("FC.csv")
+prob2.loadDemand("dem.csv")
+prob2.loadCapacity("cap.csv")
 
-"""
-#algorithm = HillClimbing(prob, maximize=False, numN = 1000)
-algorithm = TabuSearch(prob, maximize=False)
+knapSack = KNAPSACKProblem()
+knapSack.loadItemWeights("itemWeights.csv")
+knapSack.loadRequired("required.csv")
+knapSack.setMaxCap(70)
+
+
+
+#algorithmH = HillClimbing(prob1, maximize=False, numIter=50)
+#algorithmHKP = HillClimbing(knapSack, maximize=knapSack.getMaximize(), numIter=50)
+#algorithmT = TabuSearch(prob2, maximize=False, numIter=100)
+algorithmT = TabuSearch(knapSack, maximize=False, numIter=100)
 
 #100 pruebas de codificacion
 #for _ in range(100):
 #    prob.testEncoding()
 print("comienzo optimizacion")
-algorithm.optimize()
+#algorithmH.optimize()
+#algorithmHKP.optimize()
+algorithmT.optimize()
 print("fin optimizacion")
-totalCost = algorithm.getBestCost()
-solution = algorithm.bestState
-execTime = algorithm.execTime
-iterations = algorithm.iterations
-print("fin de ejecución")
-print("solución encontrada: \n{}".format(solution))
-print("facilities asignadas \n{}".format(algorithm.x))
-print("costo total: {}".format(totalCost))
-print("costo historico: {}".format(algorithm.costHistory))
-print("tiempo de ejecucion {}".format(execTime))
-print("numero de iteraciones {}".format(iterations))
+totalCostT = algorithmT.getBestCost()
+solutionT = algorithmT.bestState
+execTimeT = algorithmT.execTime
+iterationsT = algorithmT.iterations
 
-print("costo total de instalación {}".format(np.sum(np.array(algorithm.x) * np.array(prob.FC))))
-print("capacidad total {}".format(np.sum(np.array(algorithm.x) * np.array(prob.ICap))))
-print("demanda total {}".format(np.sum(np.array(prob.dem))))
-"""
+#totalCostH = algorithmH.getBestCost()
+#solutionH = algorithmH.bestState
+#execTimeH = algorithmH.execTime
+#iterationsH = algorithmH.iterations
+#
+#totalCostKP = algorithmHKP.getBestCost()
+#solutionKP = algorithmHKP.bestState
+#execTimeKP = algorithmHKP.execTime
+#iterationsKP = algorithmHKP.iterations
+print("fin de ejecución")
+print("solución encontrada: \n{}".format(solutionT))
+print("costo total cflp: {}".format(totalCostT))
+#print("solución encontrada: \n{}".format(solutionH))
+#print("costo total cflp: {}".format(totalCostH))
+#print("solución encontrada: \n{}".format(solutionKP))
+#print("espacio disponible knacksack: {}".format(totalCostKP))
+#print("solución encontrada: \n{}".format(solution))
+#print("facilities asignadas \n{}".format(algorithmT.x))
+#print("costo total: {}".format(totalCostT))
+#print("costo historico: {}".format(algorithmT.costHistory))
+#print("tiempo de ejecucion {}".format(execTime))
+#print("numero de iteraciones {}".format(iterations))
+#
+#print("costo total de instalación {}".format(np.sum(np.array(algorithmT.x) * np.array(prob.FC))))
+#print("capacidad total {}".format(np.sum(np.array(algorithmT.x) * np.array(prob.ICap))))
+#print("demanda total {}".format(np.sum(np.array(prob.dem))))
+
 import pandas as pd
 
-data = pd.read_csv("optimo.csv")
+data = pd.read_csv("optimo.csv", header=None)
 data = np.array(data)
-print(data.shape)
-factibility = prob.getFactibility(data)
+#print(data.shape)
+factibility = prob2.getFactibility(data)
 print("optimo es factible? {}".format(factibility))
+costo = prob2.evalObj(data)
+print("costo optimo es: {}".format(costo))
+
+#porcentajeH = (totalCostH* 100)/costo-100
+porcentajeT = (totalCostT* 100)/costo-100
+
+#print("diferencia con Hill Climbing {}".format(totalCostH - costo))
+#print("diferencia con tabu search {}".format(totalCostT - costo))
+
+#print("porcentaje diferencia hill climbing {}".format(porcentajeH))
+print("porcentaje diferencia tabu search {}%".format(porcentajeT))

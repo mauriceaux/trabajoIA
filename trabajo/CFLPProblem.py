@@ -8,12 +8,14 @@ Created on Tue Jun  4 20:28:16 2019
 
 import numpy as np
 import pandas as pd
+import random
 
 class CFLPProblem:
     
     
     def __init__(self):
         
+        self.maxRSIter = 500
         self.nFacilities = None
         self.ncli = None
         self.TC = None
@@ -23,6 +25,7 @@ class CFLPProblem:
         self.minY = None
         self.minX = None
         self.minObj = None
+        self.seed = 1
     
     
     def evalObj(self, y):
@@ -99,22 +102,46 @@ class CFLPProblem:
         return True if ncli == self.ncli else False
     
     def getValidRandomState(self):
-        print("obteniendo state al azar")
-        
         valid = False
         iteracion = 0
-        encVec = np.random.randint(2, size=self.getDim()[1])    
-#        print(self.getDim())
+        np.random.seed(self.seed)
+        encVec = np.random.randint(self.getDim()[0], size=self.getDim()[1])    
         while not valid:
-            iteracion += 1
-#            print("iteracion: {}".format(iteracion), end='\r')
-            
+            if iteracion >= self.maxRSIter or iteracion >= self.getDim()[0]:
+                print("no pude conseguir un estado valido al azar")
+                return
             rndState = self.decodeSt(encVec)
             valid = self.getFactibility(rndState)
-            encVec = self.nextVector(encVec)
-#            print("rndState {} \nvalido {}".format(rndState, valid))
-        print("fin obteniendo state al azar")
-        return rndState
+            if valid: return rndState
+            rndState = self.makeMove(rndState, iteracion)
+            iteracion += 1
+            
+    def makeMove(self, state, pos, u=1):
+        encState = self.encodeState(state)
+#        print("encState {}".format(encState))
+        while pos >= encState.shape[0] - 1:
+            pos -= (encState.shape[0]-1)
+#        print("moviendo pos {} de encState {} a pos {}".format(pos, encState, pos+1))    
+        
+        curr = encState[pos]
+        encState[pos] = encState[pos+1]
+        encState[pos+1] = curr
+        
+        
+#        encState = self.encodeState(state)
+#        print("encState {}".format(encState))
+#        while pos >= encState.shape[0] - 1:
+#            pos -= (encState.shape[0]-1)
+#        print("moviendo pos {} de encState {} a pos {}".format(pos, encState, pos+1))    
+#        
+#        curr = encState[pos]
+#        encState[pos] = encState[pos+1]
+#        encState[pos+1] = curr
+#        print("termino movimiento: {}".format(encState))
+#        exit()
+        
+#        encState[pos] += u if 0 <= (encState[pos] + u) < self.getDim()[1] else 0
+        return self.decodeSt(encState)
     
     def getDim(self):
         return [self.nFacilities, self.ncli]
@@ -210,20 +237,64 @@ class CFLPProblem:
 #        exit()
         return target
         
-    def getValidNeighborhood(self, currState, distance, dropProb=0.0):
+    def getValidNeighborhood(self, currState, distance=1, dropout=0.0):
+        ret = {}
         enc = self.encodeState(currState)
-        ret = []
-        for j in range(distance):
-            for i in range(enc.shape[0]):
-                random = np.random.random_sample()
-                if(random < dropProb): continue
-                target = self.getVector(enc, i, j+1)
-                dec = self.decodeSt(target)
-                if self.getFactibility(dec):
-                    ret.append(dec)
+        distance = self.getDim()[0] if distance >= self.getDim()[0] else distance
+#        print("buscando vecinos de {}".format(enc))
+        random.seed(self.seed)
+        for pos in range(self.getDim()[0]):
+            
+            
+            if random.random() < dropout: continue
+#            
+            st = currState
+            
+            st = self.makeMove(st, pos, 1)
+            valid = self.getFactibility(st)
+            if valid:
+                t = tuple(map(tuple, st))
+                ret[t] = [pos, 1]
+            
+#            for u in range(distance):
+#                
+#                for direction in [-1, 1]:
+#                    st = self.makeMove(st, pos, direction*u)
+#                    valid = self.getFactibility(st)
+#                    
+#                    if valid:
+##                        enc = self.encodeState(st)
+##                        print("---{}\n".format(enc))
+#                        t = tuple(map(tuple, st))
+##                        print("---{}\n".format(t))
+#                        ret[t] = [pos, u]
+                    
+#        print("encontrados {}".format(len(ret)))
         return ret
         
+    def toBase(self, n):
+        base = self.getDim()[1]
+        string = self._toBase(n,base)
+        arr = np.array(list(map(int, string.split(','))))
+        return np.pad(arr, (base-arr.shape[0],0), 'constant')
+
+    def _toBase(self, n,base):
+        convertString = []
+        for i in range(base+1):
+            convertString.append(i)
+        if n < base:
+            return "{}".format(convertString[n])
+        else:
+            return "{},{}".format(self._toBase(n//base,base), convertString[n%base])        
         
+    def envVecToDec(self, enc):
+        base = self.getDim()[1]
+        total = 0
+        cont = base-1
+        for n in enc:
+            total += n * (base**cont)
+            cont -= 1
+        return total
         
     def testEncoding(self):
         rndState = self.getValidRandomState()
@@ -238,3 +309,4 @@ class CFLPProblem:
         _enc = self.encodeState(dec)
         if not np.array_equal(_enc, enc):
             raise Exception("Codificación no funciona!")
+
