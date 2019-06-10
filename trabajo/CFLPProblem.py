@@ -26,6 +26,7 @@ class CFLPProblem:
         self.minX = None
         self.minObj = None
         self.seed = 1
+        np.random.seed(self.seed)
     
     
     def evalObj(self, y):
@@ -34,11 +35,8 @@ class CFLPProblem:
         if self.FC is None:
             raise Exception("costos de instalacion no cargados!")
         transportCost = np.sum(y * np.array(self.TC))
-#        print("y {}".format(y))
-#        print("transportCost {}".format(y * np.array(self.TC)))
         x = self.getX(y)
         openingCost = np.sum(x*np.array(self.FC, dtype=float))
-#        print("openingCost {}".format(x*np.array(self.FC)))
         obj = openingCost + transportCost
         if self.minObj is None or obj < self.minObj:
             self.minObj = obj
@@ -49,7 +47,6 @@ class CFLPProblem:
     def getX(self, y):
         x = np.zeros((self.nFacilities))
         for i in range(self.ncli):
-#            print("y[:,i] {}".format(y[:,i]))
             if np.count_nonzero(y[:,i]) > 0: x[i] = 1
         return x
         
@@ -61,10 +58,9 @@ class CFLPProblem:
 #        CADA CLIENTE ASIGNADO  Y SOLO A UNA FACILITY 
         for i in range(self.ncli):
             totalAsignacionCliente = np.sum(y[i,:])
-            if totalAsignacionCliente <= 0 or totalAsignacionCliente > 1: 
-#                print("mas de un facilty asignado al cliente {}".format(i))                
+            if totalAsignacionCliente <= 0 or totalAsignacionCliente > 1:
                 return False
-            
+                
 #        CAPACIDAD NO SOBREPASADA
         totalDemanda = np.sum(np.array(self.dem))
         totalCapacidad = np.sum(np.array(self.getX(y)) * np.array(self.ICap))
@@ -72,6 +68,107 @@ class CFLPProblem:
             return False
         return True
         
+   
+    
+    def getValidRandomState(self):
+        valid = False
+        iteracion = 0
+        while not valid:
+            if iteracion >= self.maxRSIter or iteracion >= self.getDim()[0]:
+#                print("no pude conseguir un estado valido al azar")
+                return
+            encVec = np.random.randint(self.getDim()[0], size=self.getDim()[1])    
+#            print("vector al azar {}".format(encVec))
+            
+            rndState = self.decodeSt(encVec)
+            valid = self.getFactibility(rndState)
+            if valid: 
+#                print("eligiendo estado al azar {}".format(encVec))
+                return rndState
+#            rndState = self.makeMove(rndState, iteracion)
+            iteracion += 1
+            
+    def getValidNeighborhood(self, currState, distance=1, dropout=0.0):
+        ret = {}
+#        random.seed(self.seed)
+#        print(self.getDim()[1])
+#        exit()
+        for pos in range(self.getDim()[1]):
+#            print(pos)
+#            if random.random() < dropout: continue
+#            st = currState
+            for i in [-1,1]:
+                st = self.makeMove(currState, pos, i*distance)
+                valid = self.getFactibility(st)
+                if valid:
+#                    print(self.encodeState(st))
+                    
+                    t = tuple(map(tuple, st))
+                    ret[t] = [pos, 1]
+#            exit()
+#        exit()
+        return ret
+            
+    def makeMove(self, state, pos, u=1):
+        encState = self.encodeState(state)
+        
+        resState = encState
+        #NO SUPERA EL NUMERO DE FABRICAS
+#        for _ in range(u):
+        resState[pos] += u
+        if resState[pos] >= self.getDim()[0]:
+            resState[pos] = 0
+        if resState[pos] < 0:
+            resState[pos] = self.getDim()[0] -1
+#        if 0 <= resState[pos] + u < self.getDim()[0]:
+        
+            
+        return self.decodeSt(encState)
+    
+    def getDim(self):
+        return [self.nFacilities, self.ncli]
+        
+    def encodeState(self, state):
+        res = np.zeros((state.shape[1]), dtype=int)
+        for row in range(state.shape[1]):
+            res[row] = np.argmax(state[row,:])
+        return res
+    
+    def decodeSt(self, encVec):
+        dim = self.getDim()
+        decoded = np.zeros((dim[0], dim[1]))
+#        print(decoded.shape)
+        for row in range(encVec.shape[0]):
+            decoded[row,encVec[row]] = 1
+        return decoded       
+
+        
+    
+ 
+        
+    def envVecToDec(self, enc):
+        base = self.getDim()[1]
+        total = 0
+        cont = base-1
+        for n in enc:
+            total += n * (base**cont)
+            cont -= 1
+        return total
+        
+    def testEncoding(self):
+        rndState = self.getValidRandomState()
+        print("random state \n{}".format(rndState))
+        enc = self.encodeState(rndState)
+        print("encoded state \n{}".format(enc))
+        
+        dec = self.decodeSt(enc)
+        print("decoded state \n{}".format(dec))
+        if not np.array_equal(rndState, dec):
+            raise Exception("Decodificación no funciona!")
+        _enc = self.encodeState(dec)
+        if not np.array_equal(_enc, enc):
+            raise Exception("Codificación no funciona!")
+    
     def loadDemand(self, path):
         self.dem = pd.read_csv(path, header=None)
         if not self.checkClientsNumber(self.dem.shape[1]):
@@ -100,213 +197,81 @@ class CFLPProblem:
     def checkClientsNumber(self, ncli):
         self.ncli = ncli if self.ncli is None else self.ncli
         return True if ncli == self.ncli else False
-    
-    def getValidRandomState(self):
-        valid = False
-        iteracion = 0
-        np.random.seed(self.seed)
-        encVec = np.random.randint(self.getDim()[0], size=self.getDim()[1])    
-        while not valid:
-            if iteracion >= self.maxRSIter or iteracion >= self.getDim()[0]:
-                print("no pude conseguir un estado valido al azar")
-                return
-            rndState = self.decodeSt(encVec)
-            valid = self.getFactibility(rndState)
-            if valid: return rndState
-            rndState = self.makeMove(rndState, iteracion)
-            iteracion += 1
+        
+    def getMaximize(self):
+        return False
             
-    def makeMove(self, state, pos, u=1):
-        encState = self.encodeState(state)
-#        print("encState {}".format(encState))
-        while pos >= encState.shape[0] - 1:
-            pos -= (encState.shape[0]-1)
-#        print("moviendo pos {} de encState {} a pos {}".format(pos, encState, pos+1))    
-        
-        curr = encState[pos]
-        encState[pos] = encState[pos+1]
-        encState[pos+1] = curr
-        
-        
-#        encState = self.encodeState(state)
-#        print("encState {}".format(encState))
-#        while pos >= encState.shape[0] - 1:
-#            pos -= (encState.shape[0]-1)
-#        print("moviendo pos {} de encState {} a pos {}".format(pos, encState, pos+1))    
-#        
-#        curr = encState[pos]
-#        encState[pos] = encState[pos+1]
-#        encState[pos+1] = curr
-#        print("termino movimiento: {}".format(encState))
-#        exit()
-        
-#        encState[pos] += u if 0 <= (encState[pos] + u) < self.getDim()[1] else 0
-        return self.decodeSt(encState)
-    
-    def getDim(self):
-        return [self.nFacilities, self.ncli]
-        
-    def encodeState(self, state):
-#        state = np.array(state)
-#        print(state.shape)
-        res = np.zeros((state.shape[1]), dtype=int)
-#        print("res {}".format(res.shape))
-        for row in range(state.shape[1]):
-#            print("row {}".format(row))
-#            print("state {}".format(state))
-#            print("state[row,:] {}".format(state[row,:]))
-#            print("np.argmax(state[row,:] {}".format(np.argmax(state[row,:])))
-#            exit()
-            
-            res[row] = np.argmax(state[row,:])
-        return res
-    
-    def decodeSt(self, encVec):
-        
-#        dim = np.array([np.amax(encVec), encVec.shape[0]], dtype=int)
-#        print(encVec)
-        dim = self.getDim()
-        decoded = np.zeros((dim[0], dim[1]))
-#        print(decoded.shape)
-        for row in range(encVec.shape[0]):
-#            print("encVec {}".format(encVec))
-#            print("row {} ,encVec[row] {}".format(row,encVec[row]))
-#            print("row {}".format(row))
-#            print("encVec {}".format(encVec))
-#            print("encVec[row] {}".format(encVec[row]))
-#            print("decoded {}".format(decoded))
-            decoded[row,encVec[row]] = 1
-        return decoded
-        
-    def nextState(self, state):
-        vec = self.encodeState(state)
-        nextVec = self.nextVector(vec)
-        nextState = self.decodeSt(nextVec)
-        return nextState
-        
-    def prevState(self, state):
-        vec = self.encodeState(state)
-        prevVec = self.prevVector(vec)
-        prevState = self.decodeSt(prevVec)
-        return prevState
-            
-    def nextVector(self, vec):
-#        print("next vector: inicial {}".format(vec))
-        dim = vec.shape[0]
-        _max = self.getDim()[0] 
-#        print("vec inicial {}".format(vec))
-        for idx in range(dim):
-            
-            if (vec[idx]) < (_max-1):
-                vec[idx] += 1
-#                print("break")
-                break
-#            print("continuo en el ciclo")
-            vec[idx] = 0
-#        print("fin ciclo")
-#        print("next vector: final {}".format(vec))
-        return vec
-    
-    def prevVector(self, vec):
-        dim = vec.shape[0]
-        _max = self.getDim()[0]
-        for idx in range(dim):
-            if (vec[idx]) > 0:
-                vec[idx] -= 1 
-                break
-            vec[idx] = _max -1
-        return vec
-        
-    def getVector(self, currVec, pos, dist):
-#        print("getVector \ncurrVec\n{} \npos\n{} \ndist\n{}".format(currVec, pos, dist))
-        _max = self.getDim()[0]
-        target = currVec
-        while dist > 0:
-#            print("target {}".format(target))
-            dist -= 1
-            if pos >= target.shape[0]:
-                pos = 0
-            currVal = target[pos]
-            if currVal < (_max -1):
-                target[pos] += 1
-                continue
-            target[pos] = 0
-            pos += 1
-            
-#        print("target final {}\n max {}".format(target, _max))
-#        exit()
-        return target
-        
-    def getValidNeighborhood(self, currState, distance=1, dropout=0.0):
-        ret = {}
-        enc = self.encodeState(currState)
-        distance = self.getDim()[0] if distance >= self.getDim()[0] else distance
-#        print("buscando vecinos de {}".format(enc))
-        random.seed(self.seed)
-        for pos in range(self.getDim()[0]):
-            
-            
-            if random.random() < dropout: continue
+    #    def nextVector(self, vec):
+##        print("next vector: inicial {}".format(vec))
+#        dim = vec.shape[0]
+#        _max = self.getDim()[0] 
+##        print("vec inicial {}".format(vec))
+#        for idx in range(dim):
 #            
-            st = currState
-            
-            st = self.makeMove(st, pos, 1)
-            valid = self.getFactibility(st)
-            if valid:
-                t = tuple(map(tuple, st))
-                ret[t] = [pos, 1]
-            
-#            for u in range(distance):
-#                
-#                for direction in [-1, 1]:
-#                    st = self.makeMove(st, pos, direction*u)
-#                    valid = self.getFactibility(st)
-#                    
-#                    if valid:
-##                        enc = self.encodeState(st)
-##                        print("---{}\n".format(enc))
-#                        t = tuple(map(tuple, st))
-##                        print("---{}\n".format(t))
-#                        ret[t] = [pos, u]
-                    
-#        print("encontrados {}".format(len(ret)))
-        return ret
-        
-    def toBase(self, n):
-        base = self.getDim()[1]
-        string = self._toBase(n,base)
-        arr = np.array(list(map(int, string.split(','))))
-        return np.pad(arr, (base-arr.shape[0],0), 'constant')
+#            if (vec[idx]) < (_max-1):
+#                vec[idx] += 1
+##                print("break")
+#                break
+##            print("continuo en el ciclo")
+#            vec[idx] = 0
+##        print("fin ciclo")
+##        print("next vector: final {}".format(vec))
+#        return vec
+#    
+#    def prevVector(self, vec):
+#        dim = vec.shape[0]
+#        _max = self.getDim()[0]
+#        for idx in range(dim):
+#            if (vec[idx]) > 0:
+#                vec[idx] -= 1 
+#                break
+#            vec[idx] = _max -1
+#        return vec
 
-    def _toBase(self, n,base):
-        convertString = []
-        for i in range(base+1):
-            convertString.append(i)
-        if n < base:
-            return "{}".format(convertString[n])
-        else:
-            return "{},{}".format(self._toBase(n//base,base), convertString[n%base])        
-        
-    def envVecToDec(self, enc):
-        base = self.getDim()[1]
-        total = 0
-        cont = base-1
-        for n in enc:
-            total += n * (base**cont)
-            cont -= 1
-        return total
-        
-    def testEncoding(self):
-        rndState = self.getValidRandomState()
-        print("random state \n{}".format(rndState))
-        enc = self.encodeState(rndState)
-        print("encoded state \n{}".format(enc))
-        
-        dec = self.decodeSt(enc)
-        print("decoded state \n{}".format(dec))
-        if not np.array_equal(rndState, dec):
-            raise Exception("Decodificación no funciona!")
-        _enc = self.encodeState(dec)
-        if not np.array_equal(_enc, enc):
-            raise Exception("Codificación no funciona!")
+#        
+#    def toBase(self, n):
+#        base = self.getDim()[1]
+#        string = self._toBase(n,base)
+#        arr = np.array(list(map(int, string.split(','))))
+#        return np.pad(arr, (base-arr.shape[0],0), 'constant')
+#
+#    def _toBase(self, n,base):
+#        convertString = []
+#        for i in range(base+1):
+#            convertString.append(i)
+#        if n < base:
+#            return "{}".format(convertString[n])
+#        else:
+#            return "{},{}".format(self._toBase(n//base,base), convertString[n%base])       
 
+#    def getVector(self, currVec, pos, dist):
+##        print("getVector \ncurrVec\n{} \npos\n{} \ndist\n{}".format(currVec, pos, dist))
+#        _max = self.getDim()[0]
+#        target = currVec
+#        while dist > 0:
+##            print("target {}".format(target))
+#            dist -= 1
+#            if pos >= target.shape[0]:
+#                pos = 0
+#            currVal = target[pos]
+#            if currVal < (_max -1):
+#                target[pos] += 1
+#                continue
+#            target[pos] = 0
+#            pos += 1
+#            
+##        print("target final {}\n max {}".format(target, _max))
+##        exit()
+#        return target
+
+#    def nextState(self, state):
+#        vec = self.encodeState(state)
+#        nextVec = self.nextVector(vec)
+#        nextState = self.decodeSt(nextVec)
+#        return nextState
+#        
+#    def prevState(self, state):
+#        vec = self.encodeState(state)
+#        prevVec = self.prevVector(vec)
+#        prevState = self.decodeSt(prevVec)
+#        return prevState
