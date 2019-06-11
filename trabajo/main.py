@@ -34,7 +34,7 @@ prob1.loadCapacity("cap.csv")
 #algorithmHKP = HillClimbing(knapSack, maximize=knapSack.getMaximize(), numIter=50)
 #algorithmT = TabuSearch(prob2, maximize=False, numIter=100)
 #algorithmT = TabuSearch(knapSack, maximize=False, numIter=100)
-genetic = Genetic(prob1, maximize=False, n=20)
+genetic = Genetic(prob1, maximize=False, n=10)
 
 
 #exit()
