@@ -34,9 +34,9 @@ solutionG = genetic.bestState
 execTimeG = genetic.execTime
 iterationsG = genetic.iterations
 
-print("costo total knpsack genetic: {}".format(totalCostG))
+#print("costo total knpsack genetic: {}".format(totalCostG))
 
-#print("costo total cflp genetic: {}".format(totalCostG))
+print("costo total cflp genetic: {}".format(totalCostG))
 #
 #import pandas as pd
 #

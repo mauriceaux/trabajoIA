@@ -22,15 +22,15 @@ knapSack.loadItemWeights("itemWeights.csv")
 knapSack.loadRequired("required.csv")
 knapSack.setMaxCap(70)
 
-#algorithmH = HillClimbing(cflp, maximize=False, numIter=50)
-algorithmH = HillClimbing(knapSack, maximize=False, numIter=50)
+algorithmH = HillClimbing(cflp, maximize=False, numIter=50)
+#algorithmH = HillClimbing(knapSack, maximize=False, numIter=50)
 print("comienzo optimizacion")
 algorithmH.optimize()
 print("fin optimizacion")
 
 totalCost = algorithmH.getBestCost()
 solution = algorithmH.bestState
-print(knapSack.getFactibility(solution))
+#print(knapSack.getFactibility(solution))
 execTime = algorithmH.execTime
 iterations = algorithmH.iterations
 
@@ -51,4 +51,4 @@ print("costo total knpsack hill climbing: {}".format(totalCost))
 #porcentajeH = (totalCost* 100)/costo-100
 #print("porcentaje diferencia hill climbing {}%".format(porcentajeH))
 #
-print("tiempo de ejecucion {} milis".format(execTime))
+print("tiempo de ejecucion {} micros".format(execTime))

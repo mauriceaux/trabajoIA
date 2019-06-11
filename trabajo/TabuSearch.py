@@ -49,9 +49,8 @@ class TabuSearch:
         tries = 0
         distance = 1
         while maxRetry > tries:
-#            print(tries)
             self.iterations += 1
-            print("Tabu search -- iteracion {}       cost {}          distance {}      ".format(self.iterations, self.getBestCost(), distance), end='\r')
+            print("Tabu search -- iteracion {}       cost {}          distance {}    ".format(self.iterations, round(self.getBestCost()), distance), end='\r')
             
             dropout = 0.0
                 
@@ -85,7 +84,6 @@ class TabuSearch:
             bestCanIdx = np.argmax(np.array(candidatesCosts))
             bestCandidate = candidates[bestCanIdx]
             bestCandidateCost = candidatesCosts[bestCanIdx]
-#            self.tabuList.append(bestCandidate)
             currState = bestCandidate
             if bestCandidateCost > self.bestCost:
                 
@@ -101,7 +99,7 @@ class TabuSearch:
             
 #                distance += 1
         self.endTime = datetime.now()
-        self.execTime = (self.endTime - self.startTime).microseconds / 1000
+        self.execTime = (self.endTime - self.startTime).microseconds 
         print('\n')
         return
         

@@ -50,7 +50,7 @@ class Genetic:
         self.besState = self.poblacion[0][1]
         self.bestCost = self.poblacion[0][0]
         self.endTime = datetime.now()
-        self.execTime = (self.endTime - self.startTime).microseconds / 1000
+        self.execTime = (self.endTime - self.startTime).microseconds
         
     def createNewGeneration(self, selected):
         hijos = []

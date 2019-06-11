@@ -29,8 +29,8 @@ knapSack.loadRequired("required.csv")
 knapSack.setMaxCap(70)
 
 
-algorithmT = TabuSearch(knapSack, maximize=False, numIter=100)
-#algorithmT = TabuSearch(prob1, maximize=False, numIter=100)
+#algorithmT = TabuSearch(knapSack, maximize=False, numIter=100)
+algorithmT = TabuSearch(prob1, maximize=False, numIter=100)
 print("comienzo optimizacion")
 algorithmT.optimize()
 print("fin optimizacion")
@@ -40,7 +40,8 @@ execTimeT = algorithmT.execTime
 iterationsT = algorithmT.iterations
 
 print("fin de ejecución")
-print("costo total knapsack tabu: {}".format(totalCostT))
+print("costo total cflp tabu: {}".format(totalCostT))
+#print("costo total knapsack tabu: {}".format(totalCostT))
 
 
 
@@ -55,4 +56,4 @@ print("costo total knapsack tabu: {}".format(totalCostT))
 #porcentajeT = (totalCostT* 100)/costo-100
 #print("porcentaje diferencia tabu search {}%".format(porcentajeT))
 #
-print("tiempo de ejecucion {} milis".format(execTimeT))
+print("tiempo de ejecucion {} micros".format(execTimeT))
