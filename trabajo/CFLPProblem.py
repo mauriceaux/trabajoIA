@@ -43,13 +43,7 @@ class CFLPProblem:
             self.minX = x
             self.minY = y
         return obj
-        
-    def getX(self, y):
-        x = np.zeros((self.nFacilities))
-        for i in range(self.ncli):
-            if np.count_nonzero(y[:,i]) > 0: x[i] = 1
-        return x
-        
+    
     def getFactibility(self, y):
         if self.dem is None:
             raise Exception("demanda de clientes no cargada!")
@@ -67,6 +61,14 @@ class CFLPProblem:
         if totalDemanda > totalCapacidad: 
             return False
         return True
+        
+    def getX(self, y):
+        x = np.zeros((self.nFacilities))
+        for i in range(self.ncli):
+            if np.count_nonzero(y[:,i]) > 0: x[i] = 1
+        return x
+        
+    
         
    
     
@@ -200,6 +202,12 @@ class CFLPProblem:
         
     def getMaximize(self):
         return False
+    
+    def getMaxValue(self):
+        return self.nFacilities
+    
+    def getMinValue(self):
+        return 1
             
     #    def nextVector(self, vec):
 ##        print("next vector: inicial {}".format(vec))

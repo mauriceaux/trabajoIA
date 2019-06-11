@@ -84,65 +84,65 @@ class KNAPSACKProblem:
         return True
     
             
-    def getValidNeighborhood(self, currState, distance=1, dropout=0.0):
-        print("buscando vecinos de {}".format(currState))
-        ret = {}
-        nDim = self._getDim()
-#        nMovs = nDim*2
-        movs = []
-        for i in range(nDim):
-            zeros = np.zeros((nDim),dtype=int)
-#            print(zeros)
-            zeros[i] = distance
-            movs.append(zeros)
-            movs.append(zeros*-1)
-            
-        print(movs)
-        for mov in movs:
-            
-            print("currState {} mov {}".format(currState, mov))
-            st = np.zeros((nDim),dtype=int)
-            st = currState + (mov*distance)
-#            for i in range(currState.shape[0]):
-#                st[i] += mov[i] if 0< st[i] + mov[i] < 1 else currState[i]
-            print(st)
-            if(self.getFactibility(st)):
-                t = tuple(st)
-                ret[t] = mov
-                print("agregado")
-#        exit()
-        
-#        if len(ret) < 1: raise Exception("no se encontraron vecinos")
-        
-#        distance = self._getDim() if distance >= self._getDim() else distance
-        
-#        enc = self.encodeState(currState)
-        
-#        print("buscando vecinos de {}".format(enc))
-#        random.seed(self.seed)
-#        for pos in range(self._getDim()):
-#            if random.random() < dropout: continue
-#            st = currState
-#            st = self.makeMove(st, pos, distance)
-#            valid = self.getFactibility(st)
-#            if valid:
-#                t = tuple(st)
-#                ret[t] = [pos, distance]
+#    def getValidNeighborhood(self, currState, distance=1, dropout=0.0):
+#        print("buscando vecinos de {}".format(currState))
+#        ret = {}
+#        nDim = self._getDim()
+##        nMovs = nDim*2
+#        movs = []
+#        for i in range(nDim):
+#            zeros = np.zeros((nDim),dtype=int)
+##            print(zeros)
+#            zeros[i] = distance
+#            movs.append(zeros)
+#            movs.append(zeros*-1)
 #            
-##            for u in range(distance):
-##                for direction in [-1, 1]:
-##                    st = self.makeMove(st, pos, direction*(u+1))
-#                    
+#        print(movs)
+#        for mov in movs:
+#            
+#            print("currState {} mov {}".format(currState, mov))
+#            st = np.zeros((nDim),dtype=int)
+#            st = currState + (mov*distance)
+##            for i in range(currState.shape[0]):
+##                st[i] += mov[i] if 0< st[i] + mov[i] < 1 else currState[i]
+#            print(st)
+#            if(self.getFactibility(st)):
+#                t = tuple(st)
+#                ret[t] = mov
+#                print("agregado")
+##        exit()
+#        
+##        if len(ret) < 1: raise Exception("no se encontraron vecinos")
+#        
+##        distance = self._getDim() if distance >= self._getDim() else distance
+#        
+##        enc = self.encodeState(currState)
+#        
+##        print("buscando vecinos de {}".format(enc))
+##        random.seed(self.seed)
+##        for pos in range(self._getDim()):
+##            if random.random() < dropout: continue
+##            st = currState
+##            st = self.makeMove(st, pos, distance)
+##            valid = self.getFactibility(st)
+##            if valid:
+##                t = tuple(st)
+##                ret[t] = [pos, distance]
+##            
+###            for u in range(distance):
+###                for direction in [-1, 1]:
+###                    st = self.makeMove(st, pos, direction*(u+1))
 ##                    
-##                    if valid:
-###                        enc = self.encodeState(st)
-###                        print("---{}\n".format(enc))
-##                        t = tuple(st)
-###                        print("---{}\n".format(t))
-##                        ret[t] = [pos, u+1]
-#                    
-##        print("encontrados {}".format(len(ret)))
-        return ret 
+###                    
+###                    if valid:
+####                        enc = self.encodeState(st)
+####                        print("---{}\n".format(enc))
+###                        t = tuple(st)
+####                        print("---{}\n".format(t))
+###                        ret[t] = [pos, u+1]
+##                    
+###        print("encontrados {}".format(len(ret)))
+#        return ret 
     
 #    def getX(self):
         
@@ -151,7 +151,7 @@ class KNAPSACKProblem:
         valid = False
         iteracion = 0
         np.random.seed(self.seed)
-        rndState = np.random.randint(2,size=self._getDim())
+        rndState = np.random.randint(self.getMaxValue(),size=self._getDim())
         
 #        print("rndState {}".format(rndState))
         
@@ -159,27 +159,30 @@ class KNAPSACKProblem:
         while not valid:
             #print("iteracion \n{}\n self.maxRSIter \n{}\n self._getDim() {}".format(iteracion,self.maxRSIter,self._getDim()))
             if iteracion >= self.maxRSIter or iteracion >= self._getDim():
+#                return
                 raise Exception(("no pude conseguir un estado valido al azar"))
             
             valid = self.getFactibility(rndState)
 #            print("random state {} valid {}".format(rndState,valid))
 #            print("fin")
 #            exit()
-            if valid: return rndState
+            if valid: 
+                print(rndState)
+                return rndState
             rndState = self.makeMove(rndState, iteracion, u=1)
             iteracion += 1
     
     def makeMove(self, state, pos, u=1):
         encState = self.encodeState(state)
-        print("encState {}".format(encState))
+#        print("encState {}".format(encState))
         while pos >= encState.shape[0] - 1:
             pos -= (encState.shape[0]-1)
-        print("moviendo pos {} de encState {} a pos {}".format(pos, encState, pos+1))    
-        
-        curr = encState[pos]
-        encState[pos] = encState[pos+1]
-        encState[pos+1] = curr
-        print("termino movimiento: {}".format(encState))
+#        print("moviendo pos {} de encState {} a pos {}".format(pos, encState, pos+1))    
+#        
+#        curr = encState[pos]
+#        encState[pos] = encState[pos+1]
+#        encState[pos+1] = curr
+#        print("termino movimiento: {}".format(encState))
 #        exit()
         
         
@@ -243,6 +246,12 @@ class KNAPSACKProblem:
         
     def getMaximize(self):
         return False
+    
+    def getMaxValue(self):
+        return 2
+    
+    def getMinValue(self):
+        return 0
     
     
     

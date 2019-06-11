@@ -7,7 +7,7 @@ Created on Wed Jun  5 15:24:40 2019
 import numpy as np
 from CFLPProblem import CFLPProblem
 from HillClimbing import HillClimbing
-#from KNAPSACKProblem import KNAPSACKProblem
+from KNAPSACKProblem import KNAPSACKProblem
 from TabuSearch import TabuSearch
 from Genetic import Genetic
 
@@ -23,10 +23,10 @@ prob1.loadCapacity("cap.csv")
 #prob2.loadDemand("dem.csv")
 #prob2.loadCapacity("cap.csv")
 
-#knapSack = KNAPSACKProblem()
-#knapSack.loadItemWeights("itemWeights.csv")
-#knapSack.loadRequired("required.csv")
-#knapSack.setMaxCap(70)
+knapSack = KNAPSACKProblem()
+knapSack.loadItemWeights("itemWeights.csv")
+knapSack.loadRequired("required.csv")
+knapSack.setMaxCap(70)
 
 
 
@@ -34,7 +34,8 @@ prob1.loadCapacity("cap.csv")
 #algorithmHKP = HillClimbing(knapSack, maximize=knapSack.getMaximize(), numIter=50)
 #algorithmT = TabuSearch(prob2, maximize=False, numIter=100)
 #algorithmT = TabuSearch(knapSack, maximize=False, numIter=100)
-genetic = Genetic(prob1, maximize=False, n=20)
+#genetic = Genetic(prob1, maximize=False, n=20)
+genetic = Genetic(knapSack, maximize=False, n=20)
 
 
 #exit()

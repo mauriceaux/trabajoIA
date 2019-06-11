@@ -28,51 +28,41 @@ class HillClimbing:
         best = None
         tries = 0
         maxTries = 10
-        distance = 20
+        distance = 1
         
         dropout = 0.0
         currState = None
         print("Hill climbing --")
+        self.startTime = datetime.now()
         while maxTries >= tries:
-#        for i in range(self.numIter):
-#            if maxTries < tries: break
-#            dropout = 0.0 if dropout < 0.0 else dropout
-#            dropout = 0.8 if dropout > 0.9 else dropout
             self._optimize(currState, distance, dropout)
-#            print("******{}********".format(self.bestState))
             if best is None or self.bestCost > best:
                 best = self.bestCost
                 distance -= 1 if (distance -1)  > 1 else 0
-#                distance = 1
+                currState = self.currState
                 tries = 0
-#                dropout -= 0.1
-#                currState = self.currState
-#                distance -= 10 if distance > 10 else 0
-#                dropout -= 0.01 if dropout > 0.01 else 0.0
             else: 
                 tries += 1
-#                print("eligiendo state nuevo")
 #                currState = self.currState
-                distance+=1 
-                
-#                distance += 10
-#                dropout += 0.1
-            currState = self.currState
+                currState = None
+                distance+= 1 if distance +1 < (self.problem.getMaxValue()/2)  else 0
+            
         self.bestCost = best
+        self.endTime = datetime.now()
+        self.execTime = (self.endTime - self.startTime).microseconds / 1000
         print("\n")
     
     def _optimize(self, cState = None, distance = 10, dropOut = 0.0):
-#        print("_optimize")
         self.iterations += 1
 #        EN LA PRIMERA EJECUCIÓN SE MARCA EL INICIO Y SE SELECCIONA UN STATE AL AZAR
         self.currState = cState
         if self.currState is None:
-            self.startTime = datetime.now()
+            
             self.currState = self.problem.getValidRandomState()
             
+        
 #        EVALÚO SI MEJORO LA SOLUCIÓN                    
         currCost = self.problem.evalObj(self.currState)
-#        print("estado acual {} iteracion {}".format(self.currState,self.iterations))
         print("iteracion {} \t cost {}\t dropout {}\t distance {}              ".format(self.iterations, round(self.getBestCost()), dropOut, distance), end='\r')
         self.costHistory.append(currCost)
         currCost *= 1 if self.maximize else -1
@@ -80,7 +70,6 @@ class HillClimbing:
             #SI ENCONTRÉ UNA MEJOR SOLUCIÓN, ACTUALIZO
             self.bestCost = currCost
             self.bestState = self.currState
-#            self.x = self.problem.getX(self.currState)
         #OBTENGO LOS VECINOS DEL STATE ACTUAL
         neighbors = self.obtainValidNeighbors(self.currState, distance, dropOut)
         
@@ -89,39 +78,56 @@ class HillClimbing:
             neighborCosts = []       
             nArray = []
             for neighbor in neighbors:
-#                neighbor = self.problem.decodeSt(encNeighbor)
                 neighbor = np.array(neighbor)
                 nArray.append(neighbor)
-                neighborCosts.append(self.problem.evalObj(neighbor))
+                cost = self.problem.evalObj(neighbor)
+                cost *= 1 if self.maximize else -1
+                neighborCosts.append(cost)
             
             bestNeighborCostIdx = -1
             #DEPENDIENDO DEL TIPO DE PROBLEMA, ELIJO AL MEJOR VECINO
             
-            if self.maximize:
-                bestNeighborCostIdx = np.argmax(neighborCosts)
-            else:
-                bestNeighborCostIdx = np.argmin(neighborCosts)
-                
+            
+            bestNeighborCostIdx = np.argmax(neighborCosts)
+                            
             bestNeighbor = neighborCosts[bestNeighborCostIdx]
             bestNeighbor *= 1 if self.maximize else -1
             
             #COMPARO EL OBJETIVO CON EL MEJOR ENCONTRADO
-#            print("bestNeighbor {}, self.bestCost {}".format(bestNeighbor, self.bestCost))
             if bestNeighbor > self.bestCost:
                 self.currState = nArray[bestNeighborCostIdx]
                 return self._optimize(self.currState, distance, dropOut)
-#        print("mejor solución encontrada :)")
-#        print("\n")
-        self.endTime = datetime.now()
-        self.execTime = (self.endTime - self.startTime).microseconds / 1000
+        
         
         return 
         
     
         
     def obtainValidNeighbors(self, currState, distance, dropout):
-#        distance = 20
-        neighbors = self.problem.getValidNeighborhood(currState, distance, dropout)        
+        neighbors = []
+        encCurrentState = self.problem.encodeState(currState)
+        #VENTANA DEL 5% DE LOS REGISTROS
+        total = len(encCurrentState)
+        
+        for pos in range(total):
+            st = encCurrentState    
+            for i in [-1,1]:
+                st[pos] += distance*i
+                if st[pos] > self.problem.getMaxValue():
+                    continue
+#                    st[pos] = self.problem.getMaxValue() -1
+                if st[pos] < self.problem.getMinValue():
+#                    continue
+                    st[pos] = self.problem.getMinValue()
+                
+                dec = self.problem.decodeSt(st)
+                
+                valid = self.problem.getFactibility(dec)
+                if valid:
+#                    print(st)
+                    neighbors.append(dec)
+#        print(neighbors)
+#        exit()
         return neighbors
     
     
@@ -129,7 +135,7 @@ class HillClimbing:
     def getBestCost(self):
         if self.bestCost is None:
             return -1
-        return self.bestCost * (1 if self.maximize else -1)
+        return self.bestCost * (1 if self.problem.getMaximize() else -1)
     
     
         
