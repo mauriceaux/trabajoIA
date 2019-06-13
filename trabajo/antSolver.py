@@ -22,4 +22,6 @@ prob1.loadCapacity("cap.csv")
 
 
 antColony = Ants(prob1)
+antColony = Ants(knapSack)
+
 antColony.optimize()

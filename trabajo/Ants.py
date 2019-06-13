@@ -9,6 +9,7 @@ from datetime import datetime
 import copy
 from numpy.random import choice
 import random
+from collections import deque
 
 
 class Ants:
@@ -23,25 +24,27 @@ class Ants:
             self.movsPosibles = movsPosibles
             self.volviendo = False
             self.nombre = nombre
+            self.distancia = 1
             
         def elegirAccion(self, stateActual, pheromones):
-            t = tuple(copy.deepcopy(stateActual))
+            t = tuple(copy.deepcopy(self.stateActual))
             self.direccion = random.choice([-1,1])
             
             if t in pheromones:
-                totFerMov = []
-                dirs = []
-#                print("********************")
-#                print("********************")
-                for item in pheromones[t]:
-#                    print(item)
-                    totFerMov.append(np.sum(item[1]))
-                    dirs.append(item[0])
-                
-#                exit()
-                totFerMov = np.array(totFerMov, dtype=float)
-                
-                totFerMov *= 1.0/np.sum(totFerMov)
+#                totFerMov = []
+#                dirs = []
+##                print("********************")
+##                print("********************")
+#                for item in pheromones[t]:
+##                    print(item)
+#                    totFerMov.append(np.sum(item[1]))
+#                    dirs.append(item[0])
+#                
+##                exit()
+#                totFerMov = np.array(totFerMov, dtype=float)
+#                if np.sum(totFerMov) == 0:
+#                    print(totFerMov)
+#                totFerMov *= 1.0/np.sum(totFerMov)
 #                if np.all(totFerMov != totFerMov):
 #                    totFerMov = np.ones(totFerMov.shape)
 #                print("********************")
@@ -56,20 +59,21 @@ class Ants:
 #                exit()
                 movs = copy.deepcopy(pheromones[t][0][1])
                 movs = np.array(movs, dtype=float)
+#                print (movs)
                 
-                movs *= 1.0/np.sum(movs)
-                movs = np.array(movs)
-                print(t)
-                print(movs)
+#                print(t)
+#                print(movs)
                 if np.sum(movs) > 0:
+                    movs *= 1.0/np.sum(movs)
+                    movs = np.array(movs)
                     return choice(movs.shape[0], p=movs)
 #                if np.all(totFerMov != totFerMov):
 #                    movs = np.ones(movs.shape)
-                
-            return round(random.random() * (stateActual.shape[0]-1))
+            return random.randint(0, (stateActual.shape[0]-1))
+#            return round(random.random() * (stateActual.shape[0]-1))
             
-        def dejarFeromonas(self, pheromones, direccion, mov, rastro):
-            t = tuple(copy.deepcopy(self.stateActual))
+        def dejarFeromonas(self, pheromones, state, direccion, mov, rastro):
+            t = tuple(copy.deepcopy(state))
             zeros = np.zeros(len(t))
             zeros[mov] = rastro
             mov = zeros
@@ -89,44 +93,65 @@ class Ants:
         def paso(self, pheromones):
             if self.stateActual is None:
                 self.stateActual = self.stateInicio
-            currCost = self.problem.evalObj(self.problem.decodeSt(self.stateActual))
-#            print("self.stateActual, currCost, self.bestCost {} {} {}".format(self.stateActual, currCost, self.bestCost))
-            currCost *= -1 if not self.problem.getMaximize() else 1
-#            print("state actual {}".format(self.stateActual))
-            if self.bestCost is None:
-                self.bestCost = currCost
-                
+#            print(self.camino)
+#            if self.nombre == 'hormiga 12':
+#                print("{} {}".format(self.nombre, self.stateActual))
             
-            if self.bestCost < currCost:
-                self.bestCost = currCost
-                #ENCONTRE COMIDA, VUELVO
-                self.volviendo = True
-                self.bestCost = currCost
 #                state = copy.deepcopy(self.stateInicio)
-            rastro = 20
-            if len(self.camino) > 0:
-                self.dejarFeromonas(pheromones, self.camino[-1][0], self.camino[-1][1], rastro)
+            
                 
             if self.volviendo and len(self.camino) > 0:
                 direccion, pos = self.camino[-1]
                 nuevoState = copy.deepcopy(self.stateActual)
                 nuevoState[pos] -= direccion
+                nuevoState = np.clip(nuevoState, self.problem.getMinValue(), (self.problem.getMaxValue() -1),out=nuevoState)
                 self.stateActual = nuevoState
                 self.camino.pop(-1)
-                print("hormiga {} camino en direccion {} en la posicion {} (volviendo)".format(self.nombre, direccion, pos))
+#                print("hormiga {} camino en direccion {} en la posicion {} (volviendo)".format(self.nombre, -direccion, pos))
                 
             else:
+                currCost = self.problem.evalObj(self.problem.decodeSt(self.stateActual))
+    #            print("self.stateActual, currCost, self.bestCost {} {} {}".format(self.stateActual, currCost, self.bestCost))
+                currCost *= -1 if not self.problem.getMaximize() else 1
+    #            print("state actual {}".format(self.stateActual))
+                if self.bestCost is None:
+                    self.bestCost = currCost
+                    
+                
+                if self.bestCost < currCost:
+                    self.bestCost = currCost
+                    #ENCONTRE COMIDA, VUELVO
+                    self.volviendo = True
+                    self.bestCost = currCost
+                    return
                 self.volviendo = False
                 nuevoState = copy.deepcopy(self.stateActual)
+#                print(pheromones[nuevoState][0][1])
                 accion = self.elegirAccion(self.stateActual, pheromones)
-                nuevoState[accion] += self.direccion if self.problem.getMinValue() <= nuevoState[accion] + self.direccion < self.problem.getMaxValue() else 0
+                while accion > self.problem.getMaxValue():
+                    accion -= len(self.stateActual)
+#                if len(self.camino) > 0 and (accion == self.camino[-1][1] and -self.direccion == self.camino[-1][0]):
+#                    self.direccion *= -1
+#                if self.nombre == 'hormiga 12':
+#                    print("----{} {}".format(self.nombre, nuevoState))
+                nuevoState[accion] += self.direccion * self.distancia if self.problem.getMinValue() <= nuevoState[accion] + self.direccion < self.problem.getMaxValue() else 0
+#                print((self.problem.getMaxValue() -1))
+#                exit()
+                nuevoState = np.clip(nuevoState, self.problem.getMinValue(), (self.problem.getMaxValue() -1),out=nuevoState)
+#                if self.nombre == 'hormiga 12':
+#                    print("----{} {}".format(self.nombre, nuevoState))
                 
                 
                 if self.problem.getFactibility(self.problem.decodeSt(nuevoState)):
+                    rastro = 20
+                    if len(self.camino) > 0:
+                        self.dejarFeromonas(pheromones, self.stateActual, self.camino[-1][0], self.camino[-1][1], rastro)
                     self.stateActual = nuevoState
                     self.camino.append([self.direccion, accion])
-                    
-                print("hormiga {} camino en direccion {} en la posicion {}".format(self.nombre, self.direccion, accion))
+#                print(self.stateActual)
+#            if self.nombre == 'hormiga 12':
+#                print("{} {}".format(self.nombre, self.stateActual))
+#                print("hormiga {} camino en direccion {} en la posicion {}".format(self.nombre, self.direccion, accion))
             
             
                     
@@ -137,27 +162,76 @@ class Ants:
         self.nest = self.problem.encodeState(self.problem.getValidRandomState())
         self.movsPosibles = self.nest.shape[0]
         self.pheromones = {}
-        self.ants = []
+        self.ants = deque([],20)
         self.bestCost = None
+        
         np.random.seed(1)
         random.seed(1)
         
     def addAnt(self, direccion):
         ant = Ants.Ant(self.nest, direccion, self.bestCost, self.problem, self.movsPosibles, nombre=len(self.ants))
+        ant.distancia = random.randint(0, 20)
+#        ant.distancia = choice([1,3,13,20], p=[0.1,0.5, 0.3,0.1])
+        ant.nombre = "hormiga {}".format(len(self.ants))
         self.ants.append(ant)
         
     def optimize(self):
 #        self.addAnt(-1)
 #        for i in range(10):
-            
-        for i in range (15):
-            if(len(self.ants) < 1):
-                self.addAnt(random.randint(-1,1))
+        
+#        ant = Ants.Ant(self.nest, random.randint(-1,1), self.bestCost, self.problem, self.movsPosibles, nombre=len(self.ants))
+#        print("hormiga en posicion: {}".format(ant.stateInicio))
+#        print("feromonas {}".format(self.pheromones))
+#        ant.paso(self.pheromones)
+#        print("hormiga en posicion: {}".format(ant.stateActual))
+#        self.evaporarFeromonas()
+#        print("feromonas {}".format(self.pheromones))
+#        ant.paso(self.pheromones)
+#        print("hormiga en posicion: {}".format(ant.stateActual))
+#        self.evaporarFeromonas()
+#        print("feromonas {}".format(self.pheromones))
+#        ant.paso(self.pheromones)
+#        print("hormiga en posicion: {}".format(ant.stateActual))
+#        self.evaporarFeromonas()
+#        print("feromonas {}".format(self.pheromones))
+#        ant.paso(self.pheromones)
+#        print("hormiga en posicion: {}".format(ant.stateActual))
+#        self.evaporarFeromonas()
+#        print("feromonas {}".format(self.pheromones))
+#        ant.paso(self.pheromones)
+#        print("hormiga en posicion: {}".format(ant.stateActual))
+#        self.evaporarFeromonas()
+#        print("feromonas {}".format(self.pheromones))
+#        ant.paso(self.pheromones)
+#        print("hormiga en posicion: {}".format(ant.stateActual))
+#        exit()
+        
+        
+#        self.addAnt(random.randint(-1,1))
+#        self.addAnt(random.randint(-1,1))
+#        self.addAnt(random.randint(-1,1))
+        
+        for i in range (1000):
+            self.addAnt(random.randint(-1,1))
+                
             
             for ant in self.ants:
+                
 #                print("posicion inicio hormiga: {}".format(ant.stateInicio))
 #                print(len(self.pheromones))
                 ant.paso(self.pheromones)
+                if len(self.pheromones) > 200:
+                    minimo = None
+                    for f in self.pheromones:
+                        if minimo is None: minimo = f
+#                        print(f[1])
+#                        exit()
+#                        print(len(self.pheromones))
+#                        print(self.pheromones[minimo][0][1])
+#                        print(f)
+                        if np.all(self.pheromones[f][0][1] < self.pheromones[minimo][0][1]): 
+                            minimo = f
+                    del self.pheromones[minimo]
 #                print(len(self.pheromones))
 #                exit()
 #                print("mapa de feromonas \n{}".format(self.pheromones))
@@ -166,8 +240,9 @@ class Ants:
                     #LA HORMIGA ENCONTRO UN MAXIMO
                 if self.bestCost is None or self.bestCost < ant.bestCost:
                     self.bestCost = ant.bestCost
+                    self.nest = ant.stateActual
             self.evaporarFeromonas()
-#            print("iteracion {} \t cost {}\t ".format(i+1, round(self.getBestCost())), end='\r')
+            print("iteracion {} \t tamaño mapa feromonas {} tamaño colonia {} cost {}\t ".format(i+1, len(self.pheromones), len(self.ants), round(self.getBestCost())), end='\r')
 #        print("camino hormiga negativa {}".format(self.ants[1].camino))
 #        print("mapa de feromonas \n{}".format(self.pheromones))
         print("\n")
