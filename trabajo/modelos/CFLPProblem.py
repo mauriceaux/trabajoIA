@@ -27,6 +27,19 @@ class CFLPProblem:
         self.minObj = None
         self.seed = 1
         np.random.seed(self.seed)
+        self.subSampleSize = 0.1
+        
+    def getSubSampleLimits(self, num):
+        if num > self.getSubSampleNumber():
+            raise Exception("No existe esa sub muestra")
+        limInf = round((self.ncli) * num * self.subSampleSize)
+        limSup = round(((self.ncli) * (num + 1) * self.subSampleSize))
+#        return self.toBase(limInf), self.toBase(limSup)
+        return limInf, limSup
+#        
+    def getSubSampleNumber(self):
+        return round(1/self.subSampleSize)
+        
     
     
     def evalObj(self, y):
@@ -237,20 +250,21 @@ class CFLPProblem:
 #        return vec
 
 #        
-#    def toBase(self, n):
-#        base = self.getDim()[1]
-#        string = self._toBase(n,base)
-#        arr = np.array(list(map(int, string.split(','))))
-#        return np.pad(arr, (base-arr.shape[0],0), 'constant')
-#
-#    def _toBase(self, n,base):
-#        convertString = []
-#        for i in range(base+1):
-#            convertString.append(i)
-#        if n < base:
-#            return "{}".format(convertString[n])
-#        else:
-#            return "{},{}".format(self._toBase(n//base,base), convertString[n%base])       
+    def toBase(self, n):
+        base = self.getDim()[1]
+        string = self._toBase(n,base)
+#        print(string)
+        arr = np.array(list(map(int, string.split(','))))
+        return np.pad(arr, (base-arr.shape[0],0), 'constant')
+
+    def _toBase(self, n,base):
+        convertString = []
+        for i in range(base+1):
+            convertString.append(i)
+        if n < base:
+            return "{}".format(convertString[n])
+        else:
+            return "{},{}".format(self._toBase(n//base,base), convertString[n%base])       
 
 #    def getVector(self, currVec, pos, dist):
 ##        print("getVector \ncurrVec\n{} \npos\n{} \ndist\n{}".format(currVec, pos, dist))

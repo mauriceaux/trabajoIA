@@ -12,10 +12,10 @@ from KNAPSACKProblem import KNAPSACKProblem
 from Genetic import Genetic
 
 prob1 = CFLPProblem()
-prob1.loadTransportCost("TC.csv")
-prob1.loadFacilityCost("FC.csv")
-prob1.loadDemand("dem.csv")
-prob1.loadCapacity("cap.csv")
+prob1.loadTransportCost("TC500.csv")
+prob1.loadFacilityCost("FC500.csv")
+prob1.loadDemand("dem500.csv")
+prob1.loadCapacity("cap500.csv")
 
 knapSack = KNAPSACKProblem()
 knapSack.loadItemWeights("itemWeights.csv")

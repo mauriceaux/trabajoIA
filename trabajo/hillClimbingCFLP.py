@@ -12,10 +12,15 @@ from HillClimbing import HillClimbing
 import numpy as np
 
 cflp = CFLPProblem()
-cflp.loadTransportCost("TC.csv")
-cflp.loadFacilityCost("FC.csv")
-cflp.loadDemand("dem.csv")
-cflp.loadCapacity("cap.csv")
+cflp.loadTransportCost("TC500.csv")
+cflp.loadFacilityCost("FC500.csv")
+cflp.loadDemand("dem500.csv")
+cflp.loadCapacity("cap500.csv")
+
+#cflp.loadTransportCost("TC.csv")
+#cflp.loadFacilityCost("FC.csv")
+#cflp.loadDemand("dem.csv")
+#cflp.loadCapacity("cap.csv")
 
 knapSack = KNAPSACKProblem()
 knapSack.loadItemWeights("itemWeights.csv")
@@ -34,9 +39,9 @@ solution = algorithmH.bestState
 execTime = algorithmH.execTime
 iterations = algorithmH.iterations
 
-print("costo total knpsack hill climbing: {}".format(totalCost))
+#print("costo total knpsack hill climbing: {}".format(totalCost))
 
-#print("costo total cflp hill climbing: {}".format(totalCost))
+print("costo total cflp hill climbing: {}".format(totalCost))
 #
 #import pandas as pd
 #data = pd.read_csv("optimo.csv", header=None)
