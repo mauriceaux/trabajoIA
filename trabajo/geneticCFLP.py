@@ -22,8 +22,8 @@ knapSack.loadItemWeights("itemWeights.csv")
 knapSack.loadRequired("required.csv")
 knapSack.setMaxCap(70)
 
-#genetic = Genetic(prob1, maximize=False, n=20)
-genetic = Genetic(knapSack, maximize=False, n=20)
+genetic = Genetic(prob1, maximize=False, n=20)
+#genetic = Genetic(knapSack, maximize=False, n=20)
 
 print("comienzo optimizacion")
 genetic.optimize()
@@ -38,16 +38,16 @@ iterationsG = genetic.iterations
 
 print("costo total cflp genetic: {}".format(totalCostG))
 #
-#import pandas as pd
-#
-#data = pd.read_csv("optimo.csv", header=None)
-#data = np.array(data)
-#factibility = prob1.getFactibility(data)
-#print("optimo es factible? {}".format(factibility))
-#costo = prob1.evalObj(data)
-#print("costo optimo es: {}".format(costo))
-#
-#porcentajeG = (totalCostG* 100)/costo-100
-#print("porcentaje diferencia genetic {}%".format(porcentajeG))
+import pandas as pd
+
+data = pd.read_csv("optimo.csv", header=None)
+data = np.array(data)
+factibility = prob1.getFactibility(data)
+print("optimo es factible? {}".format(factibility))
+costo = prob1.evalObj(data)
+print("costo optimo es: {}".format(costo))
+
+porcentajeG = (totalCostG* 100)/costo-100
+print("porcentaje diferencia genetic {}%".format(porcentajeG))
 #
 print("tiempo de ejecucion {} milis".format(execTimeG))
