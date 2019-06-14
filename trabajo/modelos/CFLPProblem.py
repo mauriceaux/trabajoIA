@@ -150,6 +150,7 @@ class CFLPProblem:
         return res
     
     def decodeSt(self, encVec):
+        
         dim = self.getDim()
         decoded = np.zeros((dim[0], dim[1]))
 #        print(decoded.shape)

@@ -71,6 +71,7 @@ class Genetic:
                 for hijo in [h1,h2]:
                     dec = self.problem.decodeSt(hijo)
                     if(self.problem.getFactibility(dec)):
+                        
                         cost = self.problem.evalObj(dec)
                         cost *= -1 if not self.problem.getMaximize() else 1
                         hijos.append([cost,hijo])
