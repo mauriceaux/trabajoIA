@@ -13,23 +13,23 @@ Created on Wed Jun  5 15:24:40 2019
 @author: mauri
 """
 import numpy as np
-from CFLPProblem import CFLPProblem
-from KNAPSACKProblem import KNAPSACKProblem
-from TabuSearch import TabuSearch
+from modelos.CFLPProblem import CFLPProblem
+from modelos.KNAPSACKProblem import KNAPSACKProblem
+from algoritmos.TabuSearch import TabuSearch
 
 prob1 = CFLPProblem()
-prob1.loadTransportCost("TC500.csv")
-prob1.loadFacilityCost("FC500.csv")
-prob1.loadDemand("dem500.csv")
-prob1.loadCapacity("cap500.csv")
-#prob1.loadTransportCost("TC.csv")
-#prob1.loadFacilityCost("FC.csv")
-#prob1.loadDemand("dem.csv")
-#prob1.loadCapacity("cap.csv")
+#prob1.loadTransportCost("modelos/cflp/TC500.csv")
+#prob1.loadFacilityCost("modelos/cflp/FC500.csv")
+#prob1.loadDemand("modelos/cflp/dem500.csv")
+#prob1.loadCapacity("modelos/cflp/cap500.csv")
+prob1.loadTransportCost("datos/cflp/TC.csv")
+prob1.loadFacilityCost("datos/cflp/FC.csv")
+prob1.loadDemand("datos/cflp/dem.csv")
+prob1.loadCapacity("datos/cflp/cap.csv")
 
 knapSack = KNAPSACKProblem()
-knapSack.loadItemWeights("itemWeights.csv")
-knapSack.loadRequired("required.csv")
+knapSack.loadItemWeights("datos/knapsack/itemWeights.csv")
+knapSack.loadRequired("datos/knapsack/required.csv")
 knapSack.setMaxCap(70)
 
 
