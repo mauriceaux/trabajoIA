@@ -6,25 +6,25 @@ Created on Mon Jun 10 19:49:30 2019
 @author: mauri
 """
 
-from CFLPProblem import CFLPProblem
-from KNAPSACKProblem import KNAPSACKProblem
-from HillClimbing import HillClimbing
+from modelos.CFLPProblem import CFLPProblem
+from modelos.KNAPSACKProblem import KNAPSACKProblem
+from algoritmos.HillClimbing import HillClimbing
 import numpy as np
 
 cflp = CFLPProblem()
-cflp.loadTransportCost("TC500.csv")
-cflp.loadFacilityCost("FC500.csv")
-cflp.loadDemand("dem500.csv")
-cflp.loadCapacity("cap500.csv")
+#cflp.loadTransportCost("datos/cflp/TC500.csv")
+#cflp.loadFacilityCost("datos/cflp/FC500.csv")
+#cflp.loadDemand("datos/cflp/dem500.csv")
+#cflp.loadCapacity("datos/cflp/cap500.csv")
 
-#cflp.loadTransportCost("TC.csv")
-#cflp.loadFacilityCost("FC.csv")
-#cflp.loadDemand("dem.csv")
-#cflp.loadCapacity("cap.csv")
+cflp.loadTransportCost("datos/cflp/TC.csv")
+cflp.loadFacilityCost("datos/cflp/FC.csv")
+cflp.loadDemand("datos/cflp/dem.csv")
+cflp.loadCapacity("datos/cflp/cap.csv")
 
 knapSack = KNAPSACKProblem()
-knapSack.loadItemWeights("itemWeights.csv")
-knapSack.loadRequired("required.csv")
+knapSack.loadItemWeights("datos/knapsack/itemWeights.csv")
+knapSack.loadRequired("datos/knapsack/required.csv")
 knapSack.setMaxCap(70)
 
 algorithmH = HillClimbing(cflp, maximize=False, numIter=50)

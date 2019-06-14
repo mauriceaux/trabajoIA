@@ -32,7 +32,7 @@ class HillClimbing:
         maxTries = 10
         distance = 1
         
-        dropout = 0.8
+        dropout = 0.0
         currState = None
         print("Hill climbing --")
         self.startTime = datetime.now()
@@ -65,7 +65,8 @@ class HillClimbing:
         neighbors = self.obtainValidNeighbors(self.currState, distance, dropOut)
 #        print(len(neighbors))
 #        exit()
-        while len(neighbors) > 0:
+        stuck = 0
+        while len(neighbors) > 0 and stuck < 10:
             self.iterations += 1
             
                 
@@ -110,6 +111,8 @@ class HillClimbing:
     #                print("mejor vecino encontrado: {} best cost {}".format(bestNeighbor, self.bestCost))
                     self.currState = nArray[bestNeighborCostIdx]
 #                    return self._optimize(self.currState, distance, dropOut)
+                else:
+                    stuck += 1
         
         
         return 
