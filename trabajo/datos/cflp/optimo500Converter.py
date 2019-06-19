@@ -18,7 +18,7 @@ for line in lines:
 #    if cont >= len(lines)-501: break
 #    print("*{}*".format(line[0]))
     
-    if line[0] == '\n': continue
+    
 #        cont = 0
 #        newlines.append(buffer)
 #        newlines = np.array(newlines)
@@ -34,24 +34,45 @@ for line in lines:
 #    lines[idx1] = re.sub(r' ', '', lines[idx1])
     line = re.sub(r'\s+', ',', line)
     line = re.sub(r'\n', '', line)
-    line = re.sub(r' ', '', line)
-    
+#    line = re.sub(r' ', '', line)
+    splited = line.split(',')[:-1]
+    print(splited)
+    if line[0] == '\n': continue
 #    lines[idx1] = np.array(list(map(float,lines[idx1].split(',')[:-1])))
 #    print("{} {}".format(cont,line.split(',')))
 #    print(list(map(float,lines[idx1].split(',')[:-1])))
 #    if cont > 3: exit()
-    line = list(map(float,line.split(',')[:-1]))
-    if len(line) < 7: break
+    line = list(map(float,splited[:-1]))
+    if len(line) < 3: 
+#        print(line)
+        continue
 #    if len(newlines) <= 0:
 #        newlines = line
-    newlines.append((line))
+    buffer.append((line))
+    if len(buffer) >= 500:
+        traspuesta = np.array(buffer).T
+#        print(traspuesta.shape)
+        if len(newlines) == 0:
+            newlines = traspuesta
+#            continue
+        else:
+            newlines = np.array(newlines)
+            newlines = np.vstack((newlines, traspuesta))
+        
+        
+#        newlines = np.array(newlines).reshape((-1))
+#        print(np.array(newlines).shape)
+#        exit()
+        buffer = []
 #    buffer.append(lines[idx1][:7])
 #    buffer.append(np.array(lines[idx1]).split(',')))
     cont+=1
 
 newlines = np.array(newlines)
-#print(newlines)
-newlines = newlines.reshape([500,497])
+#newlines = newlines.reshape([500,500])
+print(newlines.shape)
+exit()
+
 resto = []
 for line in lines:
     
