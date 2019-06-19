@@ -29,31 +29,40 @@ class HillClimbing:
     def optimize(self):
         best = None
         tries = 0
-        maxTries = 10
+        maxTries = 3
         distance = 1
         
         dropout = 0.0
         currState = None
         print("Hill climbing --")
         self.startTime = datetime.now()
-        while maxTries >= tries:
-            self._optimize(currState, distance, dropout)
-            if best is None or self.bestCost > best:
-                best = self.bestCost
-                distance -= 1 if (distance -1)  > 1 else 0
-                currState = self.currState
+        epochs = 2
+        
+        self.problem.setWinSize(0.2)
+        for _ in range(epochs):
+            for subProbN in range(self.problem.getNumSubProb()):
+#                print(subProbN)
+                distance = 1
                 tries = 0
-            else: 
-                tries += 1
-                currState = self.currState
-                distance+= 1 if distance +1 < (self.problem.getMaxValue()/2)  else 0
-            
-        self.bestCost = best
+                dropout = 0.0
+                while maxTries >= tries:
+                    self._optimize(subProbN, currState, distance, dropout)
+                    if best is None or self.bestCost > best:
+                        best = self.bestCost
+                        distance -= 1 if (distance -1)  > 1 else 0
+                        currState = self.currState
+                        tries = 0
+                    else: 
+                        tries += 1
+                        currState = self.currState
+                        distance+= 1 if distance +1 < (self.problem.getMaxValue()/2)  else 0
+                    
+                self.bestCost = best
         self.endTime = datetime.now()
         self.execTime = (self.endTime - self.startTime).microseconds 
         print("\n")
     
-    def _optimize(self, cState = None, distance = 10, dropOut = 0.0):
+    def _optimize(self, subProbN, cState = None, distance = 10, dropOut = 0.0):
         
 #        EN LA PRIMERA EJECUCIÓN SE MARCA EL INICIO Y SE SELECCIONA UN STATE AL AZAR
         self.currState = cState
@@ -61,12 +70,12 @@ class HillClimbing:
         if self.currState is None:
             self.currState = self.problem.getValidRandomState()
         
-        print("inicio")
-        neighbors = self.obtainValidNeighbors(self.currState, distance, dropOut)
+#        print("inicio")
+        neighbors = self.obtainValidNeighbors(self.currState, subProbN, distance, dropOut)
 #        print(len(neighbors))
 #        exit()
         stuck = 0
-        while len(neighbors) > 0 and stuck < 10:
+        while len(neighbors) > 0 and stuck < 2:
             self.iterations += 1
             
                 
@@ -84,7 +93,7 @@ class HillClimbing:
                 self.bestState = self.currState
             
             #OBTENGO LOS VECINOS DEL STATE ACTUAL
-            neighbors = self.obtainValidNeighbors(self.currState, distance, dropOut)
+            neighbors = self.obtainValidNeighbors(self.currState, subProbN, distance, dropOut)
             
             if(len(neighbors) > 0):
                 #EVALUO LA FUNCIÓN OBJETIVO PARA CADA VECINO
@@ -110,21 +119,26 @@ class HillClimbing:
     #                print("\n")
     #                print("mejor vecino encontrado: {} best cost {}".format(bestNeighbor, self.bestCost))
                     self.currState = nArray[bestNeighborCostIdx]
+#                    distance -= 1 if (distance -1)  > 1 else 0
 #                    return self._optimize(self.currState, distance, dropOut)
                 else:
                     stuck += 1
+#                    distance+= 1 if distance +1 < (self.problem.getMaxValue()/2)  else 0
         
         
         return 
         
     
         
-    def obtainValidNeighbors(self, currState, distance, dropout):
+    def obtainValidNeighbors(self, currState, subProbN, distance, dropout):
         neighbors = []
         encCurrentState = self.problem.encodeState(currState)
-        total = len(encCurrentState)
-        
-        for pos in range(total):
+#        total = len(encCurrentState)
+        minN, maxN = self.problem.getSubSampleLimits(subProbN)
+#        print(subProbN)
+        for pos in range(minN, maxN):
+            
+#        for pos in range(total):
             if random.random() < dropout: continue
             st = copy.deepcopy(encCurrentState)
             for i in [-1,1]:

@@ -45,58 +45,65 @@ class TabuSearch:
         bestCandidateCost = self.problem.evalObj(bestCandidate)
         bestCandidateCost *= 1 if self.problem.getMaximize() else -1
         self.tabuCostList.append(bestCandidateCost)
-        maxRetry = 20
-        tries = 0
-        distance = 1
-        while maxRetry > tries:
-            self.iterations += 1
-            print("Tabu search -- iteracion {}       cost {}          distance {}    ".format(self.iterations, round(self.getBestCost()), distance), end='\r')
-            
-            dropout = 0.0
+        epochs = 10
+        
+        
+        self.problem.setWinSize(0.1)
+        for _ in range(epochs):
+            for subProbN in range(self.problem.getNumSubProb()):
                 
-            neighborhood = self.obtainValidNeighbors(currState, distance, dropout)
-            candidates = []
-            candidatesCosts = []
-            for neighbor in neighborhood:
-                neighbor = np.array(neighbor)
-                neighborCost = self.problem.evalObj(neighbor)
-                neighborCost *= 1 if self.problem.getMaximize() else -1
-
-                found = False
-                for tabu in self.tabuList:
-                    if(np.all(tabu == neighbor)):
-                        found = True
-                        break
-                    
-                if (not found):
-                    self.tabuList.append(neighbor)
-                    self.tabuCostList.append(neighborCost)
-                    candidates.append(neighbor)
-                    candidatesCosts.append(neighborCost)
-                    
-
-            if len(candidatesCosts) < 1:
-                tries+=1
-                distance+= 1 if distance +1 < (self.problem.getMaxValue()/2)  else 0
-                idx = np.argmax(np.array(self.tabuCostList))
-                candidates.append(self.tabuList[idx])
-                candidatesCosts.append(self.tabuCostList[idx])
-            bestCanIdx = np.argmax(np.array(candidatesCosts))
-            bestCandidate = candidates[bestCanIdx]
-            bestCandidateCost = candidatesCosts[bestCanIdx]
-            currState = bestCandidate
-            if bestCandidateCost > self.bestCost:
-                
-                self.costHistory.append(bestCandidateCost)
-                self.bestState = bestCandidate
-                self.bestCost = bestCandidateCost
+                maxRetry = 5
                 tries = 0
-                distance -= 1 if distance -1 >0 else 0
-            else:
-                distance+= 1 if distance +1 < (self.problem.getMaxValue()/2)  else 0
-            
-#                distance = 5
-            
+                distance = 1
+                while maxRetry > tries:
+                    self.iterations += 1
+                    print("Tabu search -- iteracion {}       cost {}          distance {}    ".format(self.iterations, round(self.getBestCost()), distance), end='\r')
+                    
+                    dropout = 0.0
+                        
+                    neighborhood = self.obtainValidNeighbors(currState, subProbN, distance, dropout)
+                    candidates = []
+                    candidatesCosts = []
+                    for neighbor in neighborhood:
+                        neighbor = np.array(neighbor)
+                        neighborCost = self.problem.evalObj(neighbor)
+                        neighborCost *= 1 if self.problem.getMaximize() else -1
+        
+                        found = False
+                        for tabu in self.tabuList:
+                            if(np.all(tabu == neighbor)):
+                                found = True
+                                break
+                            
+                        if (not found):
+                            self.tabuList.append(neighbor)
+                            self.tabuCostList.append(neighborCost)
+                            candidates.append(neighbor)
+                            candidatesCosts.append(neighborCost)
+                            
+        
+                    if len(candidatesCosts) < 1:
+                        tries+=1
+                        distance+= 1 if distance +1 < (self.problem.getMaxValue()/2)  else 0
+                        idx = np.argmax(np.array(self.tabuCostList))
+                        candidates.append(self.tabuList[idx])
+                        candidatesCosts.append(self.tabuCostList[idx])
+                    bestCanIdx = np.argmax(np.array(candidatesCosts))
+                    bestCandidate = candidates[bestCanIdx]
+                    bestCandidateCost = candidatesCosts[bestCanIdx]
+                    currState = bestCandidate
+                    if bestCandidateCost > self.bestCost:
+                        
+                        self.costHistory.append(bestCandidateCost)
+                        self.bestState = bestCandidate
+                        self.bestCost = bestCandidateCost
+                        tries = 0
+                        distance -= 1 if distance -1 >0 else 0
+                    else:
+                        distance+= 1 if distance +1 < (self.problem.getMaxValue()/2)  else 0
+                
+    #                distance = 5
+                
 #                distance += 1
         self.endTime = datetime.now()
         self.execTime = (self.endTime - self.startTime).microseconds 
@@ -105,13 +112,14 @@ class TabuSearch:
         
     
         
-    def obtainValidNeighbors(self, currState, distance, dropout=0.0):
+    def obtainValidNeighbors(self, currState, subProbN, distance, dropout=0.0):
         neighbors = []
         encCurrentState = self.problem.encodeState(currState)
 #        print(encCurrentState)
         #VENTANA DEL 5% DE LOS REGISTROS
-        total = len(encCurrentState)
-        for pos in range(total):
+#        total = len(encCurrentState)
+        minN, maxN = self.problem.getSubSampleLimits(subProbN)
+        for pos in range(minN,maxN):
             st = encCurrentState
             for i in [-1,1]:
                 st[pos] += distance*i

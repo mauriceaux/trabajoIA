@@ -9,6 +9,7 @@ import copy
 from numpy.random import choice
 import random
 from collections import deque
+from datetime import datetime
 
 
 class Ants:
@@ -24,8 +25,9 @@ class Ants:
             self.volviendo = False
             self.nombre = nombre
             self.distancia = 1
+            self.bestState = None
             
-        def elegirAccion(self, stateActual, pheromones):
+        def elegirAccion(self, stateActual, pheromones, subProblmNum):
             t = tuple(copy.deepcopy(self.stateActual))
             self.direccion = random.choice([-1,1])
             
@@ -39,7 +41,9 @@ class Ants:
                     return choice(movs.shape[0], p=movs)
 #            limInf, limSup = self.problem.getSubSampleLimits(self.numSubSample)
 #            return random.randint(limInf, limSup)
-            return random.randint(0, self.problem.getMaxValue()-1)
+            minN, maxN = self.problem.getSubSampleLimits(subProblmNum)
+            return random.randint(minN, maxN)
+#            return random.randint(0, self.problem.getMaxValue()-1)
             
         def dejarFeromonas(self, pheromones, state, direccion, mov, rastro):
             t = tuple(copy.deepcopy(state))
@@ -59,7 +63,7 @@ class Ants:
             
             
             
-        def paso(self, pheromones):
+        def paso(self, pheromones, subPrbNum):
             if self.stateActual is None:
                 self.stateActual = self.stateInicio
                 
@@ -84,7 +88,7 @@ class Ants:
                     return
                 self.volviendo = False
                 nuevoState = copy.deepcopy(self.stateActual)
-                accion = self.elegirAccion(self.stateActual, pheromones)
+                accion = self.elegirAccion(self.stateActual, pheromones, subPrbNum)
                 
                 while accion >= self.problem.getMaxValue():
                     accion -= len(self.stateActual)
@@ -123,34 +127,50 @@ class Ants:
         maxTries = 100
         iteration = 0
         numSample = 0
-        for i in range (1000):
-#        i = 0
-#        while iteration < maxTries:
-            self.addAnt(random.randint(-1,1))
-                
-            
-            for ant in self.ants:
-                ant.paso(self.pheromones)
-                if len(self.pheromones) > 200:
-                    minimo = None
-                    for f in self.pheromones:
-                        if minimo is None: minimo = f
-                        if np.all(self.pheromones[f][0][1] < self.pheromones[minimo][0][1]): 
-                            minimo = f
-                    del self.pheromones[minimo]
-                    #LA HORMIGA ENCONTRO UN MAXIMO
-                if self.bestCost is None or self.bestCost < ant.bestCost:
-                    self.bestCost = ant.bestCost
-                    self.nest = ant.stateActual
-#                    iteration = 0
-#                else:
-#                    iteration += 1
-#                    numSample = numSample + 1 if numSample < self.problem.getSubSampleNumber() else 0
-            self.evaporarFeromonas()
-            print("iteracion {} \t tamaño mapa feromonas {} tamaño colonia {} cost {}\t ".format(i+1, len(self.pheromones), len(self.ants), round(self.getBestCost())), end='\r')
-#            i+=1
+        epochs = 2
+        self.problem.setWinSize(0.3)
+        self.startTime = datetime.now()
+        self.iterations = 0
+#        print(self.problem.getNumSubProb())
+#        for subProbN in range(self.problem.getNumSubProb()):
+#            print(self.problem.getSubSampleLimits(subProbN))
+#        exit()
+        for _ in range(epochs):
+            for subProbN in range(self.problem.getNumSubProb()):
+                self.ants = deque([],20)
+                self.pheromones = {}
+                for i in range (100):
+        #        i = 0
+        #        while iteration < maxTries:
+                    self.iterations += 1
+                    self.addAnt(random.randint(-1,1))
+                        
+                    
+                    for ant in self.ants:
+                        ant.paso(self.pheromones, subProbN)
+                        if len(self.pheromones) > 200:
+                            minimo = None
+                            for f in self.pheromones:
+                                if minimo is None: minimo = f
+                                if np.all(self.pheromones[f][0][1] < self.pheromones[minimo][0][1]): 
+                                    minimo = f
+                            del self.pheromones[minimo]
+                            #LA HORMIGA ENCONTRO UN MAXIMO
+                        if self.bestCost is None or self.bestCost < ant.bestCost:
+                            self.bestCost = ant.bestCost
+                            self.nest = ant.stateActual
+                            self.bestState = ant.stateActual
+        #                    iteration = 0
+        #                else:
+        #                    iteration += 1
+        #                    numSample = numSample + 1 if numSample < self.problem.getSubSampleNumber() else 0
+                    self.evaporarFeromonas()
+                    print("iteracion {} \t tamaño mapa feromonas {} tamaño colonia {} cost {}\t ".format(self.iterations, len(self.pheromones), len(self.ants), round(self.getBestCost())), end='\r')
+    #            i+=1
         print("\n")
         print("mejor encontrado {}".format(self.getBestCost()))
+        self.endTime = datetime.now()
+        self.execTime = (self.endTime - self.startTime).microseconds 
         
     def evaporarFeromonas(self):
         for item in self.pheromones:

@@ -29,11 +29,25 @@ class CFLPProblem:
         np.random.seed(self.seed)
         self.subSampleSize = 0.1
         
+    def getNumSubProb(self):
+        num = round(self.ncli/self.winSize)
+        if (self.ncli%self.winSize)>0:
+            return num+1
+        return num
+            
+        
+    def setWinSize(self, num):
+        self.winSize = round(num*self.ncli)
+        
     def getSubSampleLimits(self, num):
         if num > self.getSubSampleNumber():
             raise Exception("No existe esa sub muestra")
-        limInf = round((self.ncli) * num * self.subSampleSize)
-        limSup = round(((self.ncli) * (num + 1) * self.subSampleSize))
+#        limInf = round((self.ncli) * num * self.winSize)
+#        limSup = round(((self.ncli) * (num + 1) * self.winSize))
+        
+        limInf = num * self.winSize
+        limSup = limInf + self.winSize
+        if limSup > self.ncli: limSup = self.ncli
 #        return self.toBase(limInf), self.toBase(limSup)
         return limInf, limSup
 #        
@@ -188,7 +202,7 @@ class CFLPProblem:
     def loadDemand(self, path):
         self.dem = pd.read_csv(path, header=None)
         if not self.checkClientsNumber(self.dem.shape[1]):
-            raise Exception("demanda no tiene el mismo numero de elementos que el numero de clientes. Num elementos leidos {}, num clientes {}".format(self.dem.shape[0], self.ncli))
+            raise Exception("demanda no tiene el mismo numero de elementos que el numero de clientes. Num elementos leidos {}, num clientes {}".format(self.dem.shape[1], self.ncli))
               
     def loadCapacity(self, path):
         self.ICap = pd.read_csv(path, header=None)
