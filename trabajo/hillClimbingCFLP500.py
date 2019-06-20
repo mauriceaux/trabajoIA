@@ -18,7 +18,7 @@ cflp.loadCapacity("datos/cflp/cap500.csv")
 
 algorithmH = HillClimbing(cflp, maximize=False, numIter=50)
 print("comienzo optimizacion")
-algorithmH.optimize()
+algorithmH.optimize(winSize=0.05)
 print("fin optimizacion")
 
 totalCost = algorithmH.getBestCost()
@@ -32,7 +32,7 @@ iterations = algorithmH.iterations
 print("costo total cflp hill climbing: {}".format(totalCost))
 #
 import pandas as pd
-data = pd.read_csv("datos/cflp/optimo500C.csv", header=None)
+data = pd.read_csv("datos/cflp/optimo500c.csv", header=None)
 data = np.array(data)
 
 factibility = cflp.getFactibility(data)
@@ -45,3 +45,4 @@ porcentajeH = (totalCost* 100)/costo-100
 print("porcentaje diferencia hill climbing {}%".format(porcentajeH))
 #
 print("tiempo de ejecucion {} micros".format(execTime))
+cflp.grficarCostos()

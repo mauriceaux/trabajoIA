@@ -123,12 +123,12 @@ class Ants:
         ant.nombre = "hormiga {}".format(len(self.ants))
         self.ants.append(ant)
         
-    def optimize(self):
+    def optimize(self, winSize = 0.1):
         maxTries = 100
         iteration = 0
         numSample = 0
         epochs = 2
-        self.problem.setWinSize(0.3)
+        self.problem.setWinSize(winSize)
         self.startTime = datetime.now()
         self.iterations = 0
 #        print(self.problem.getNumSubProb())

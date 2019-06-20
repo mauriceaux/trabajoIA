@@ -8,7 +8,8 @@ Created on Tue Jun  4 20:28:16 2019
 
 import numpy as np
 import pandas as pd
-import random
+import time
+import matplotlib.pyplot as plt
 
 class CFLPProblem:
     
@@ -28,7 +29,17 @@ class CFLPProblem:
         self.seed = 1
         np.random.seed(self.seed)
         self.subSampleSize = 0.1
+        self.costHistory = []
+        self.bestState = None
         
+    def grficarCostos(self):
+        arr = np.array(self.costHistory)
+        plt.plot(arr[:,0], arr[:,1])
+        plt.title('costo en el tiempo')
+        plt.legend()
+        plt.show()
+        
+    
     def getNumSubProb(self):
         num = round(self.ncli/self.winSize)
         if (self.ncli%self.winSize)>0:
@@ -40,8 +51,8 @@ class CFLPProblem:
         self.winSize = round(num*self.ncli)
         
     def getSubSampleLimits(self, num):
-        if num > self.getSubSampleNumber():
-            raise Exception("No existe esa sub muestra")
+        if num > self.getNumSubProb():
+            raise Exception("No existe esa sub muestra {} total: {}".format(num, self.getNumSubProb()))
 #        limInf = round((self.ncli) * num * self.winSize)
 #        limSup = round(((self.ncli) * (num + 1) * self.winSize))
         
@@ -67,8 +78,9 @@ class CFLPProblem:
         obj = openingCost + transportCost
         if self.minObj is None or obj < self.minObj:
             self.minObj = obj
-            self.minX = x
-            self.minY = y
+            millis = int(round(time.time() * 1000))
+            self.costHistory.append([millis,obj])
+            self.bestState = y
         return obj
     
     def getFactibility(self, y):

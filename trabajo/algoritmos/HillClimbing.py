@@ -26,7 +26,7 @@ class HillClimbing:
         self.x = None
         self.costHistory = []
         
-    def optimize(self):
+    def optimize(self, winSize=0.1):
         best = None
         tries = 0
         maxTries = 3
@@ -38,7 +38,7 @@ class HillClimbing:
         self.startTime = datetime.now()
         epochs = 2
         
-        self.problem.setWinSize(0.2)
+        self.problem.setWinSize(winSize)
         for _ in range(epochs):
             for subProbN in range(self.problem.getNumSubProb()):
 #                print(subProbN)
@@ -49,7 +49,8 @@ class HillClimbing:
                     self._optimize(subProbN, currState, distance, dropout)
                     if best is None or self.bestCost > best:
                         best = self.bestCost
-                        distance -= 1 if (distance -1)  > 1 else 0
+#                        distance -= 1 if (distance -1)  > 1 else 0
+                        distance = 1
                         currState = self.currState
                         tries = 0
                     else: 
@@ -81,8 +82,10 @@ class HillClimbing:
                 
             
     #        EVALÚO SI MEJORO LA SOLUCIÓN                    
+            
             currCost = self.problem.evalObj(self.currState)
-            print("iteracion {} \t cost {}\t dropout {}\t distance {}              ".format(self.iterations, round(self.getBestCost()), dropOut, distance), end='\r')
+            
+            print("iteracion {} \t cost {}\t dropout {}\t distance {}  page {}            ".format(self.iterations, round(self.getBestCost()), dropOut, distance, subProbN), end='\r')
             
             currCost *= 1 if self.problem.getMaximize() else -1
             
@@ -94,7 +97,6 @@ class HillClimbing:
             
             #OBTENGO LOS VECINOS DEL STATE ACTUAL
             neighbors = self.obtainValidNeighbors(self.currState, subProbN, distance, dropOut)
-            
             if(len(neighbors) > 0):
                 #EVALUO LA FUNCIÓN OBJETIVO PARA CADA VECINO
                 neighborCosts = []       
@@ -135,15 +137,36 @@ class HillClimbing:
         encCurrentState = self.problem.encodeState(currState)
 #        total = len(encCurrentState)
         minN, maxN = self.problem.getSubSampleLimits(subProbN)
+#        print("{} {}".format(minN, maxN))
 #        print(subProbN)
         for pos in range(minN, maxN):
             
 #        for pos in range(total):
             if random.random() < dropout: continue
-            st = copy.deepcopy(encCurrentState)
+            
             for i in [-1,1]:
+                st = copy.deepcopy(encCurrentState)
+#                print(pos)
+#                print(encCurrentState[pos])
+#                print(st[pos,encCurrentState[pos]])
+#                print(st[pos].shape[0])
+#                print("*******{}*********".format(st[np.argmax(encCurrentState),pos]))
+#                exit()
+                
+                
+#                if (0 <= (encCurrentState[pos] + i) < self.problem.getMaxValue()):
+#                    st[pos,encCurrentState[pos]] = 0
+#                    st[pos,encCurrentState[pos] + i] = 1
+#                else:
+##                    print("{} <= {} < {} {}".format(self.problem.getMinValue(), (encCurrentState[pos] + i), self.problem.getMaxValue(), self.problem.getMinValue() >= (encCurrentState[pos] + i) > self.problem.getMaxValue()))
+#                    continue
+#                if st[pos].shape[0] < (encCurrentState[pos] + i):
+#                    st[pos,encCurrentState[pos] + i] = 1    
+#                st[pos,encCurrentState[pos]] = 0
+#                st[pos,encCurrentState[pos]] = 0
+                
                 st[pos] += distance*i
-                if st[pos] > self.problem.getMaxValue():
+                if st[pos] >= self.problem.getMaxValue():
                     continue
 #                    st[pos] = self.problem.getMaxValue() -1
                 if st[pos] < self.problem.getMinValue():

@@ -20,7 +20,7 @@ cflp.loadCapacity("datos/cflp/cap.csv")
 algorithmH = HillClimbing(cflp, maximize=False, numIter=50)
 
 print("comienzo optimizacion")
-algorithmH.optimize()
+algorithmH.optimize(winSize=0.5)
 print("fin optimizacion")
 
 totalCost = algorithmH.getBestCost()
@@ -44,3 +44,4 @@ porcentajeH = (totalCost* 100)/costo-100
 print("porcentaje diferencia hill climbing {}%".format(porcentajeH))
 #
 print("tiempo de ejecucion {} micros".format(execTime))
+cflp.grficarCostos()

@@ -46,3 +46,4 @@ porcentajeG = (totalCostG* 100)/costo-100
 print("porcentaje diferencia genetic {}%".format(porcentajeG))
 #
 print("tiempo de ejecucion {} milis".format(execTimeG))
+prob1.grficarCostos()

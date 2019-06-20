@@ -29,3 +29,4 @@ execTimeG = genetic.execTime
 iterationsG = genetic.iterations
 
 print("costo total knpsack genetic: {}".format(totalCostG))
+knapSack.grficarCostos()

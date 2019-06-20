@@ -41,3 +41,4 @@ porcentajeH = (totalCost* 100)/costo-100
 print("porcentaje diferencia hormigas {}%".format(porcentajeH))
 #
 print("tiempo de ejecucion {} micros".format(execTime))
+prob1.grficarCostos()

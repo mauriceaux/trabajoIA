@@ -7,13 +7,14 @@ Created on Mon Jun 10 19:49:30 2019
 """
 
 from modelos.KNAPSACKProblem import KNAPSACKProblem
+from algoritmos.HillClimbing import HillClimbing
 
 knapSack = KNAPSACKProblem()
 knapSack.loadItemWeights("datos/knapsack/itemWeights.csv")
 knapSack.loadRequired("datos/knapsack/required.csv")
 knapSack.setMaxCap(70)
 
-algorithmH = KNAPSACKProblem(knapSack, maximize=False, numIter=50)
+algorithmH = HillClimbing(knapSack, maximize=False, numIter=50)
 print("comienzo optimizacion")
 algorithmH.optimize()
 print("fin optimizacion")
@@ -28,3 +29,4 @@ print("costo total knpsack: {}".format(totalCost))
 
 
 print("tiempo de ejecucion {} micros".format(execTime))
+knapSack.grficarCostos()

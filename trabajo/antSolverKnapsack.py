@@ -26,3 +26,4 @@ iterations = antColony.iterations
 
 print("costo total knpsack hormigas: {}".format(totalCost))
 print("tiempo de ejecucion {} micros".format(execTime))
+knapSack.grficarCostos()

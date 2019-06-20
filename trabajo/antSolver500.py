@@ -20,7 +20,7 @@ prob1.loadCapacity("datos/cflp/cap500.csv")
 
 antColony = Ants(prob1)
 
-antColony.optimize()
+antColony.optimize(winSize=0.3)
 
 totalCost = antColony.getBestCost()
 solution = antColony.bestState
@@ -28,7 +28,7 @@ execTime = antColony.execTime
 iterations = antColony.iterations
 
 import pandas as pd
-data = pd.read_csv("datos/cflp/optimo500C.csv", header=None)
+data = pd.read_csv("datos/cflp/optimo500c.csv", header=None)
 data = np.array(data)
 
 factibility = prob1.getFactibility(data)
@@ -41,3 +41,4 @@ porcentajeH = (totalCost* 100)/costo-100
 print("porcentaje diferencia hormigas {}%".format(porcentajeH))
 #
 print("tiempo de ejecucion {} micros".format(execTime))
+prob1.grficarCostos()

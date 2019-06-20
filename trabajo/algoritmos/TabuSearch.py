@@ -32,7 +32,7 @@ class TabuSearch:
         self.tabuList = deque([], maxTabuSize)
         self.tabuCostList = deque([], maxTabuSize)
         
-    def optimize(self):
+    def optimize(self, winSize=0.1, epochs = 2, maxRetry=2):
         
 #        EN LA PRIMERA EJECUCIÓN SE MARCA EL INICIO Y SE SELECCIONA UN STATE AL AZAR
         self.startTime = datetime.now()
@@ -45,19 +45,16 @@ class TabuSearch:
         bestCandidateCost = self.problem.evalObj(bestCandidate)
         bestCandidateCost *= 1 if self.problem.getMaximize() else -1
         self.tabuCostList.append(bestCandidateCost)
-        epochs = 10
         
         
-        self.problem.setWinSize(0.1)
+        self.problem.setWinSize(winSize)
         for _ in range(epochs):
             for subProbN in range(self.problem.getNumSubProb()):
-                
-                maxRetry = 5
                 tries = 0
                 distance = 1
                 while maxRetry > tries:
                     self.iterations += 1
-                    print("Tabu search -- iteracion {}       cost {}          distance {}    ".format(self.iterations, round(self.getBestCost()), distance), end='\r')
+                    print("Tabu search -- iteracion {}       cost {}          distance {}  page {}  ".format(self.iterations, round(self.getBestCost()), distance, subProbN), end='\r')
                     
                     dropout = 0.0
                         
@@ -98,9 +95,10 @@ class TabuSearch:
                         self.bestState = bestCandidate
                         self.bestCost = bestCandidateCost
                         tries = 0
-                        distance -= 1 if distance -1 >0 else 0
+                        distance = 1
                     else:
                         distance+= 1 if distance +1 < (self.problem.getMaxValue()/2)  else 0
+                        tries += 1
                 
     #                distance = 5
                 

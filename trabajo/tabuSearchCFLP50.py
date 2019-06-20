@@ -23,7 +23,7 @@ prob1.loadDemand("datos/cflp/dem.csv")
 prob1.loadCapacity("datos/cflp/cap.csv")
 algorithmT = TabuSearch(prob1, maximize=False, numIter=100)
 print("comienzo optimizacion")
-algorithmT.optimize()
+algorithmT.optimize(winSize=0.2, epochs=2, maxRetry=10)
 print("fin optimizacion")
 totalCostT = algorithmT.getBestCost()
 solutionT = algorithmT.bestState
@@ -47,3 +47,4 @@ print("costo optimo es: {}".format(costo))
 porcentajeH = (totalCostT* 100)/costo-100
 print("porcentaje diferencia tabu search {}%".format(porcentajeH))
 print("tiempo de ejecucion {} micros".format(execTimeT))
+prob1.grficarCostos()

@@ -33,9 +33,13 @@ class Genetic:
         self.startTime = datetime.now()
         self.genInitialPobl()
         self.iterations = 0
-        for i in range(self.numGenerations):
+        maxTries = 5
+        tries = 0
+        best = None
+        while tries < maxTries:
+#        for i in range(self.numGenerations):
             self.iterations += 1
-            print("iteracion {} \t cost {}\t ".format(i, round(self.poblacion[0][0])), end='\r')
+            print("iteracion {} \t cost {}\t ".format(self.iterations, round(self.poblacion[0][0])), end='\r')
             selected = np.array(self.poblacion)[0:10,1:]
 #            print (selected)
             newGeneration = self.createNewGeneration(selected)
@@ -45,6 +49,11 @@ class Genetic:
             self.poblacion.sort(key=self.sortCost, reverse=True)
             while len(self.poblacion) > self.n:
                 self.poblacion.pop(-1)
+            if best is None or self.poblacion[0][0] > best:
+                best = self.poblacion[0][0]
+                tries = 0
+            else:
+                tries += 1
         print("\n")
         
         self.besState = self.poblacion[0][1]

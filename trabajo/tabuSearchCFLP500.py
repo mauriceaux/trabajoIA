@@ -23,7 +23,7 @@ prob1.loadDemand("datos/cflp/dem500.csv")
 prob1.loadCapacity("datos/cflp/cap500.csv")
 algorithmT = TabuSearch(prob1, maximize=False, numIter=100)
 print("comienzo optimizacion")
-algorithmT.optimize()
+algorithmT.optimize(winSize=0.05)
 print("fin optimizacion")
 totalCostT = algorithmT.getBestCost()
 solutionT = algorithmT.bestState
@@ -35,7 +35,7 @@ print("fin de ejecución")
 print("costo total cflp tabu: {}".format(totalCostT))
 #
 import pandas as pd
-data = pd.read_csv("datos/cflp/optimo500C.csv", header=None)
+data = pd.read_csv("datos/cflp/optimo500c.csv", header=None)
 data = np.array(data)
 
 factibility = prob1.getFactibility(data)
@@ -47,3 +47,4 @@ print("costo optimo es: {}".format(costo))
 porcentajeH = (totalCostT* 100)/costo-100
 print("porcentaje diferencia tabu search {}%".format(porcentajeH))
 print("tiempo de ejecucion {} micros".format(execTimeT))
+prob1.grficarCostos()

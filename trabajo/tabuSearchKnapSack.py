@@ -33,3 +33,4 @@ iterationsT = algorithmT.iterations
 print("fin de ejecución")
 print("costo total knapsack tabu: {}".format(totalCostT))
 print("tiempo de ejecucion {} micros".format(execTimeT))
+knapSack.grficarCostos()

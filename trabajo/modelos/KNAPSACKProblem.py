@@ -8,7 +8,8 @@ Created on Tue Jun  4 20:28:16 2019
 
 import numpy as np
 import pandas as pd
-import random
+import time
+import matplotlib.pyplot as plt
 
 class KNAPSACKProblem:
     
@@ -20,6 +21,39 @@ class KNAPSACKProblem:
         self.PESO_ITEMS = None
         self.MAX_CAPACITY = None
         self.req = None
+        self.costHistory = []
+        self.bestState = None
+        self.bestObj=None
+        
+    def grficarCostos(self):
+        arr = np.array(self.costHistory)
+        plt.plot(arr[:,0], arr[:,1])
+        plt.title('costo en el tiempo')
+        plt.legend()
+        plt.show()
+        
+    
+    def getNumSubProb(self):
+        num = round(self._getDim()/self.winSize)
+        if (self._getDim()%self.winSize)>0:
+            return num+1
+        return num
+            
+        
+    def setWinSize(self, num):
+        self.winSize = round(num*self._getDim())
+        
+    def getSubSampleLimits(self, num):
+        if num > self.getNumSubProb():
+            raise Exception("No existe esa sub muestra {} total: {}".format(num, self.getNumSubProb()))
+#        limInf = round((self.ncli) * num * self.winSize)
+#        limSup = round(((self.ncli) * (num + 1) * self.winSize))
+        
+        limInf = num * self.winSize
+        limSup = limInf + self.winSize
+        if limSup > self._getDim(): limSup = self._getDim()
+#        return self.toBase(limInf), self.toBase(limSup)
+        return limInf, limSup
     
     
     def evalObj(self, y):
@@ -34,6 +68,12 @@ class KNAPSACKProblem:
         capUsed = self.MAX_CAPACITY - np.sum(pesoItems, axis=1)
         itmExcl = self.PESO_ITEMS.shape[0] - np.sum(y)
         obj = capUsed 
+        obj *= -1 if not self.getMaximize else 1
+        if self.bestObj is None or obj > self.bestObj:
+            self.bestObj = obj
+            millis = int(round(time.time() * 1000))
+            self.costHistory.append([millis,obj])
+            self.bestState = y
         return obj[0]
     
     def getFactibility(self, y):
